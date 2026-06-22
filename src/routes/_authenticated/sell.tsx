@@ -107,9 +107,9 @@ function SellPage() {
             setText(root, "r-cust", `${name} · ${phone}`);
             setText(root, "r-plan", `${res.plan_name} · ${fmt(Number(res.price), res.currency)}`);
             setText(root, "r-code", res.code);
-            setText(root, "r-exp", `Valid until: ${new Date(res.expires_at).toLocaleString()}`);
+            setText(root, "r-exp", res.expires_at ? `Valid until: ${new Date(res.expires_at).toLocaleString()}` : "");
             const smsEl = root.querySelector<HTMLElement>("#r-sms");
-            if (smsEl) smsEl.textContent = `Dear ${name}, your code is ${res.code}. Plan: ${res.plan_name}. Valid until ${new Date(res.expires_at).toLocaleDateString()}.`;
+            if (smsEl) smsEl.textContent = `Dear ${name}, your code is ${res.code}. Plan: ${res.plan_name}.${res.expires_at ? ` Valid until ${new Date(res.expires_at).toLocaleDateString()}.` : ""}`;
             qc.invalidateQueries({ queryKey: ["vouchers"] });
             qc.invalidateQueries({ queryKey: ["payments"] });
             qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
