@@ -70,11 +70,11 @@ function SmsCreditPage() {
 
         on(root, "cr-wal-btn", "click", async () => {
           const amt = Number(getVal(root, "cr-wal-amount")) || 0;
-          const credits = Math.floor(amt / price);
-          if (credits < 1) return notify("Enter a valid amount", "warning");
+          if (amt < 1000) return notify("Minimum transfer is 1,000", "warning");
+          if (amt > Number(wallet?.balance ?? 0)) return notify("Insufficient wallet balance", "error");
           try {
-            await buy({ data: { credits, payment_method: "wallet" } });
-            notify(`Purchased ${credits} SMS credits`, "success");
+            const r = await buy({ data: { amount: amt } });
+            notify(`Transferred — ${r.credited} credits added`, "success");
             qc.invalidateQueries({ queryKey: ["wallet"] });
             qc.invalidateQueries({ queryKey: ["sms-purchases"] });
           } catch (e) { notify((e as Error).message, "error"); }
@@ -82,15 +82,12 @@ function SmsCreditPage() {
 
         on(root, "cr-momo-btn", "click", async () => {
           const amt = Number(getVal(root, "cr-momo-amount")) || 0;
-          const credits = Math.floor(amt / price);
-          if (credits < 1) return notify("Enter a valid amount", "warning");
-          try {
-            await buy({ data: { credits, payment_method: "mpesa" } });
-            notify(`Purchased ${credits} SMS credits via M-Pesa`, "success");
-            qc.invalidateQueries({ queryKey: ["wallet"] });
-            qc.invalidateQueries({ queryKey: ["sms-purchases"] });
-          } catch (e) { notify((e as Error).message, "error"); }
+          if (amt < 1000) return notify("Minimum top-up is 1,000", "warning");
+          const phone = getVal(root, "cr-momo-phone");
+          if (!phone) return notify("Enter your mobile money phone", "warning");
+          notify("Mobile-money top-up needs MarsPay/Daraja configured — confirm provider to enable", "warning");
         });
+
 
         const rows = (purchases ?? []).map(p => `<tr>
           <td>${new Date(p.created_at).toLocaleString()}</td>
