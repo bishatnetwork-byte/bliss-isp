@@ -278,6 +278,8 @@ function AdminPage() {
           saving={update.isPending}
         />
       ) : null}
+      {access?.isPlatformAdmin ? <PlatformGatewaysCard /> : null}
+      {access?.isPlatformAdmin ? <PlatformSmsRevenueCard /> : null}
       <div className="card" style={{ marginTop: 16 }}>
         <div className="card-hd">
           <span className="card-title">📜 Activity Log</span>
