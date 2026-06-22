@@ -1,7 +1,10 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccess, canSeeRoute } from "@/hooks/useAccess";
+import { getDashboardStats } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
