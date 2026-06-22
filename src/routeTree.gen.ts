@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PTenantRouteImport } from './routes/p.$tenant'
 import { Route as AuthenticatedWithdrawRouteImport } from './routes/_authenticated/withdraw'
 import { Route as AuthenticatedWifiusersRouteImport } from './routes/_authenticated/wifiusers'
 import { Route as AuthenticatedWifipricesRouteImport } from './routes/_authenticated/wifiprices'
@@ -50,6 +51,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PTenantRoute = PTenantRouteImport.update({
+  id: '/p/$tenant',
+  path: '/p/$tenant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWithdrawRoute = AuthenticatedWithdrawRouteImport.update({
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/wifiprices': typeof AuthenticatedWifipricesRoute
   '/wifiusers': typeof AuthenticatedWifiusersRoute
   '/withdraw': typeof AuthenticatedWithdrawRoute
+  '/p/$tenant': typeof PTenantRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRoutesByTo {
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/wifiprices': typeof AuthenticatedWifipricesRoute
   '/wifiusers': typeof AuthenticatedWifiusersRoute
   '/withdraw': typeof AuthenticatedWithdrawRoute
+  '/p/$tenant': typeof PTenantRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRoutesById {
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/_authenticated/wifiprices': typeof AuthenticatedWifipricesRoute
   '/_authenticated/wifiusers': typeof AuthenticatedWifiusersRoute
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
+  '/p/$tenant': typeof PTenantRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRouteTypes {
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/wifiprices'
     | '/wifiusers'
     | '/withdraw'
+    | '/p/$tenant'
     | '/api/public/webhooks/mpesa'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/wifiprices'
     | '/wifiusers'
     | '/withdraw'
+    | '/p/$tenant'
     | '/api/public/webhooks/mpesa'
   id:
     | '__root__'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/_authenticated/wifiprices'
     | '/_authenticated/wifiusers'
     | '/_authenticated/withdraw'
+    | '/p/$tenant'
     | '/api/public/webhooks/mpesa'
   fileRoutesById: FileRoutesById
 }
@@ -304,6 +316,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PTenantRoute: typeof PTenantRoute
   ApiPublicWebhooksMpesaRoute: typeof ApiPublicWebhooksMpesaRoute
 }
 
@@ -335,6 +348,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$tenant': {
+      id: '/p/$tenant'
+      path: '/p/$tenant'
+      fullPath: '/p/$tenant'
+      preLoaderRoute: typeof PTenantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/withdraw': {
@@ -523,6 +543,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PTenantRoute: PTenantRoute,
   ApiPublicWebhooksMpesaRoute: ApiPublicWebhooksMpesaRoute,
 }
 export const routeTree = rootRouteImport
