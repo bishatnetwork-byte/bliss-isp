@@ -23,6 +23,7 @@ function MikrotiksPage() {
   const saveFn = useServerFn(upsertRouter);
   const delFn = useServerFn(deleteRouter);
   const testFn = useServerFn(testRouter);
+  const probeAllFn = useServerFn(probeAllRouters);
   const { data: routers } = useQuery({ queryKey: ["routers"], queryFn: () => listFn(), refetchInterval: 60_000 });
 
   return (
