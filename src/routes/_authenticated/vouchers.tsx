@@ -146,16 +146,16 @@ function VouchersPage() {
           const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-act]");
           if (!btn) return;
           const tr = btn.closest<HTMLElement>("tr[data-id]");
-          const id = tr?.dataset.id;
-          if (!id) return;
+          const code = tr?.dataset.code;
+          if (!code) return;
           try {
             if (btn.dataset.act === "revoke") {
               if (!confirm("Revoke this voucher?")) return;
-              await revokeFn({ data: { id } });
+              await revokeFn({ data: { code } });
               notify("Revoked", "success");
             } else if (btn.dataset.act === "delete") {
               if (!confirm("Move this voucher to the recycle bin?")) return;
-              await delFn({ data: { id } });
+              await delFn({ data: { code } });
               notify("Moved to bin", "success");
             }
             qc.invalidateQueries({ queryKey: ["vouchers"] });
