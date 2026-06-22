@@ -38,18 +38,19 @@ export const Route = createFileRoute("/api/public/cron/dispatch-campaigns")({
           const logs: Array<Record<string, unknown>> = [];
           const recipients = (c.recipients as Recipient[]) ?? [];
 
+          // Per-campaign credit gate via direct wallet read (service role bypasses RLS)
+          const { data: wallet } = await supabaseAdmin
+            .from("wallet").select("sms_credits").eq("owner_id", c.owner_id).maybeSingle();
+          let credits = (wallet?.sms_credits as number | undefined) ?? 0;
+
           for (const r of recipients) {
             const text = mergePlaceholders(c.body, {
               name: r.name ?? "", phone: r.phone, business: businessName,
             });
             const parts = calcParts(text);
-            // Reserve per-message so a single tenant's empty wallet doesn't poison the batch
-            const { error: resErr } = await supabaseAdmin.rpc("rpc_reserve_sms_credits_for", {
-              _owner: c.owner_id, _n: parts,
-            } as never);
-            if (resErr) {
+            if (credits < parts) {
               failed += 1;
-              lastError = resErr.message;
+              lastError = "insufficient_credits";
               logs.push({
                 owner_id: c.owner_id, phone: r.phone, name: r.name ?? null,
                 body: text, parts, status: "failed", error: "insufficient_credits", kind: "campaign",
@@ -58,6 +59,7 @@ export const Route = createFileRoute("/api/public/cron/dispatch-campaigns")({
             }
             const res = await dispatchSms(c.owner_id, r.phone, text);
             if (res.status === "sent") {
+              credits -= parts;
               sent += 1;
               logs.push({
                 owner_id: c.owner_id, phone: r.phone, name: r.name ?? null,
@@ -66,13 +68,16 @@ export const Route = createFileRoute("/api/public/cron/dispatch-campaigns")({
             } else {
               failed += 1;
               lastError = res.error;
-              await supabaseAdmin.rpc("rpc_refund_sms_credits_for", { _owner: c.owner_id, _n: parts } as never);
               logs.push({
                 owner_id: c.owner_id, phone: r.phone, name: r.name ?? null,
                 body: text, parts, status: "failed", error: res.error ?? "send_failed", kind: "campaign",
               });
             }
           }
+          // Persist final credit balance after the run
+          await supabaseAdmin.from("wallet")
+            .update({ sms_credits: credits })
+            .eq("owner_id", c.owner_id);
           if (logs.length) await supabaseAdmin.from("sms_messages").insert(logs as never);
 
           await supabaseAdmin.from("sms_campaigns").update({
