@@ -45,6 +45,15 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
       _type: data.type,
     });
     if (error) throw new Error(error.message);
+    const w = row as { status?: string; amount?: number; net?: number; destination?: string; failure_reason?: string | null } | null;
+    if (w) {
+      const { notifyTelegram, fmtMoney } = await import("@/lib/telegram.server");
+      const ok = w.status === "completed";
+      const msg = ok
+        ? `✅ <b>Withdrawal sent</b>\n${fmtMoney(Number(w.net ?? w.amount ?? 0))}\nTo: ${w.destination ?? "-"}`
+        : `⚠️ <b>Withdrawal failed</b>\n${fmtMoney(Number(w.amount ?? 0))}\nReason: ${w.failure_reason ?? "unknown"}`;
+      notifyTelegram(context.userId, "withdraw", msg).catch(() => {});
+    }
     return row;
   });
 
