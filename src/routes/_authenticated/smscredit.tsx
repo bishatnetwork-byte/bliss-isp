@@ -36,19 +36,37 @@ function SmsCreditPage() {
         const price = Number(fees?.sms_price_per_credit ?? 1);
         setText(root, "sms-cost-display", `${price} per SMS`);
 
+        // Top-up method toggle (Mobile Money / Main Wallet)
+        const momoFields = root.querySelector<HTMLElement>("#credit-momo-fields");
+        const walFields = root.querySelector<HTMLElement>("#credit-wallet-fields");
+        root.querySelectorAll<HTMLElement>("[data-cm]").forEach(opt => {
+          opt.removeAttribute("onclick");
+          opt.addEventListener("click", () => {
+            const m = opt.dataset.cm;
+            root.querySelectorAll<HTMLElement>("[data-cm]").forEach(o => o.classList.toggle("sel", o === opt));
+            if (momoFields) momoFields.style.display = m === "momo" ? "" : "none";
+            if (walFields) walFields.style.display = m === "wallet" ? "" : "none";
+          });
+        });
+
         const recalcMomo = () => {
           const amt = Number(getVal(root, "cr-momo-amount")) || 0;
           const credits = Math.floor(amt / price);
+          const el = root.querySelector<HTMLElement>("#cr-momo-calc");
+          if (el) el.style.display = amt > 0 ? "" : "none";
           setText(root, "cr-momo-calc-text", `${credits.toLocaleString()} credits`);
         };
         const recalcWal = () => {
           const amt = Number(getVal(root, "cr-wal-amount")) || 0;
           const credits = Math.floor(amt / price);
+          const el = root.querySelector<HTMLElement>("#cr-wal-calc");
+          if (el) el.style.display = amt > 0 ? "" : "none";
           setText(root, "cr-wal-calc-text", `${credits.toLocaleString()} credits`);
         };
         on(root, "cr-momo-amount", "input", recalcMomo);
         on(root, "cr-wal-amount", "input", recalcWal);
         recalcMomo(); recalcWal();
+
 
         on(root, "cr-wal-btn", "click", async () => {
           const amt = Number(getVal(root, "cr-wal-amount")) || 0;
