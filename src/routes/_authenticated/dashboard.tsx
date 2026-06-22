@@ -124,10 +124,10 @@ function DashboardPage() {
     if (!data.routers.length) {
       setHTML("d-router-status", '<div class="empty"><span class="empty-ico">📡</span>No routers configured yet — add one in MikroTiks</div>');
     } else {
-      setHTML("d-router-status", data.routers.map(r => {
+      setHTML("d-router-status", data.routers.map((r: { name: string; host: string; status: string | null; last_seen: string | null }) => {
         const online = r.status === "online";
         return `<div class="router-status-card${online ? "" : " offline"}">
-          <div class="router-status-name">${r.is_chr ? "☁️ " : "📡 "}${r.name}<span class="badge ${online ? "bg-green" : "bg-red"}" style="margin-left:8px">${r.status ?? "unknown"}</span></div>
+          <div class="router-status-name">📡 ${r.name}<span class="badge ${online ? "bg-green" : "bg-red"}" style="margin-left:8px">${r.status ?? "unknown"}</span></div>
           <div class="fhint" style="margin-top:6px">${r.host}${r.last_seen ? " · last seen " + new Date(r.last_seen).toLocaleString() : ""}</div>
         </div>`;
       }).join(""));

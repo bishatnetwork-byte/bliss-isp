@@ -38,9 +38,9 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       supabase.from("vouchers").select("status,deleted_at"),
       supabase.from("hotspot_sessions").select("id", { count: "exact", head: true }).is("ended_at", null),
       supabase.from("payments").select("amount,method,status,created_at").gte("created_at", fromIso),
-      supabase.from("routers").select("id,name,host,status,last_seen,is_chr"),
+      supabase.from("routers").select("id,name,host,status,last_seen"),
       supabase.from("payments").select("amount,method,status,created_at").gte("created_at", trendFromIso),
-      supabase.from("wallet").select("sms_credits").eq("user_id", context.userId).maybeSingle(),
+      supabase.from("wallet").select("sms_credits").eq("owner_id", context.userId).maybeSingle(),
     ]);
 
     const vouchers = vouchersRes.data ?? [];
