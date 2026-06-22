@@ -17,6 +17,7 @@ import {
   getPlatformSmsRevenue,
   getPlatformMikrotikOverview,
 } from "@/lib/platform-gateways.functions";
+import { sendTestSms, sendTestStk } from "@/lib/integration-tests.functions";
 import { useAccess } from "@/hooks/useAccess";
 
 const setText = (id: string, v: string | number) => {
@@ -539,6 +540,49 @@ function PlatformGatewaysCard() {
         </div>
         {save.isError ? <div className="alert ar" style={{ marginTop: 10 }}>{(save.error as Error).message}</div> : null}
         {save.isSuccess ? <div className="alert ag" style={{ marginTop: 10 }}>Saved.</div> : null}
+        <GatewayLiveTest />
+      </div>
+    </div>
+  );
+}
+
+function GatewayLiveTest() {
+  const [phone, setPhone] = useState("0741713217");
+  const [amount, setAmount] = useState(500);
+  const [out, setOut] = useState<string>("");
+  const sms = useServerFn(sendTestSms);
+  const stk = useServerFn(sendTestStk);
+  const [busy, setBusy] = useState<"sms" | "stk" | null>(null);
+  const run = async (kind: "sms" | "stk") => {
+    setBusy(kind); setOut("Running…");
+    try {
+      const res = kind === "sms"
+        ? await sms({ data: { phone, body: "HotspotPro test ✅" } })
+        : await stk({ data: { phone, amount } });
+      setOut(JSON.stringify(res, null, 2));
+    } catch (e) {
+      setOut("Error: " + (e instanceof Error ? e.message : String(e)));
+    } finally { setBusy(null); }
+  };
+  return (
+    <div className="card" style={{ marginTop: 16, background: "var(--bg2)" }}>
+      <div className="card-hd"><span className="card-title">🧪 Live test (uses saved gateways)</span></div>
+      <div className="card-body">
+        <div className="g2" style={{ alignItems: "end", gap: 12 }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="fl">Phone</label>
+            <input className="fc" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07XXXXXXXX" />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="fl">STK amount (UGX)</label>
+            <input className="fc" type="number" min={500} value={amount} onChange={(e) => setAmount(Number(e.target.value || 0))} />
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+          <button className="btn btn-p" disabled={busy !== null} onClick={() => run("sms")}>{busy === "sms" ? "Sending…" : "📨 Send Test SMS"}</button>
+          <button className="btn btn-s" disabled={busy !== null} onClick={() => run("stk")}>{busy === "stk" ? "Pushing…" : "💳 Test STK Push"}</button>
+        </div>
+        {out ? <pre className="mono" style={{ marginTop: 10, padding: 10, background: "var(--bg)", borderRadius: 6, fontSize: 11, whiteSpace: "pre-wrap", maxHeight: 240, overflow: "auto" }}>{out}</pre> : null}
       </div>
     </div>
   );

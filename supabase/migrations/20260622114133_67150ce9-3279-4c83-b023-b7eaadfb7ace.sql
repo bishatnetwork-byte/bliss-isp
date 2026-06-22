@@ -1,0 +1,2 @@
+UPDATE public.platform_gateways SET config = jsonb_set(config, '{base_url}', '"https://wizasms.ug/API/V1"'::jsonb, true) WHERE kind='sms' AND provider='wizasms';
+UPDATE public.gateways SET config = jsonb_set(config, '{base_url}', '"https://wizasms.ug/API/V1"'::jsonb, true) WHERE kind='sms' AND provider='wizasms';
