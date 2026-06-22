@@ -29,10 +29,12 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
+    setErrorMsg(null);
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -47,7 +49,14 @@ function AuthPage() {
       }
       nav({ to: "/dashboard" });
     } catch (err) {
-      toast.error((err as Error).message);
+      const raw = (err as Error).message;
+      const friendly = /pwned|weak|known to be weak/i.test(raw)
+        ? "This password appears in known data breaches. Please choose a stronger, unique password (12+ chars, mix of letters, numbers, and symbols)."
+        : /invalid login/i.test(raw)
+        ? "Invalid email or password."
+        : raw;
+      setErrorMsg(friendly);
+      toast.error(friendly);
     } finally {
       setBusy(false);
     }
@@ -77,6 +86,11 @@ function AuthPage() {
               </TabsList>
               <TabsContent value={mode}>
                 <form onSubmit={submit} className="space-y-3">
+                  {errorMsg && (
+                    <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 text-destructive px-3 py-2 text-sm">
+                      {errorMsg}
+                    </div>
+                  )}
                   {mode === "signup" && (
                     <div>
                       <Label htmlFor="name">Name</Label>
