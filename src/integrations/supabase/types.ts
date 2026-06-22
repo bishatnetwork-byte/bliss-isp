@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          meta: Json
+          owner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          message: string
+          meta?: Json
+          owner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          meta?: Json
+          owner_id?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -41,6 +68,69 @@ export type Database = {
           entity_id?: string | null
           id?: string
           metadata?: Json | null
+        }
+        Relationships: []
+      }
+      business_settings: {
+        Row: {
+          address: string | null
+          config: Json
+          currency: string
+          email: string | null
+          name: string | null
+          owner_id: string
+          phone: string | null
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          config?: Json
+          currency?: string
+          email?: string | null
+          name?: string | null
+          owner_id: string
+          phone?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          config?: Json
+          currency?: string
+          email?: string | null
+          name?: string | null
+          owner_id?: string
+          phone?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          owner_id: string
+          phone: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          owner_id: string
+          phone: string
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          owner_id?: string
+          phone?: string
+          source?: string
         }
         Relationships: []
       }
@@ -73,6 +163,102 @@ export type Database = {
           id?: string
           notes?: string | null
           phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fee_settings: {
+        Row: {
+          id: boolean
+          min_withdraw: number
+          sms_price_per_credit: number
+          updated_at: string
+          withdraw_fee_flat: number
+          withdraw_fee_pct: number
+        }
+        Insert: {
+          id?: boolean
+          min_withdraw?: number
+          sms_price_per_credit?: number
+          updated_at?: string
+          withdraw_fee_flat?: number
+          withdraw_fee_pct?: number
+        }
+        Update: {
+          id?: boolean
+          min_withdraw?: number
+          sms_price_per_credit?: number
+          updated_at?: string
+          withdraw_fee_flat?: number
+          withdraw_fee_pct?: number
+        }
+        Relationships: []
+      }
+      fee_withdrawals: {
+        Row: {
+          admin_id: string
+          amount: number
+          created_at: string
+          destination: string
+          id: string
+          method: string
+          reference: string | null
+          status: string
+        }
+        Insert: {
+          admin_id: string
+          amount: number
+          created_at?: string
+          destination: string
+          id?: string
+          method?: string
+          reference?: string | null
+          status?: string
+        }
+        Update: {
+          admin_id?: string
+          amount?: number
+          created_at?: string
+          destination?: string
+          id?: string
+          method?: string
+          reference?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      gateways: {
+        Row: {
+          config: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          kind: string
+          owner_id: string
+          provider: string
+          secret_encrypted: string | null
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          kind: string
+          owner_id: string
+          provider: string
+          secret_encrypted?: string | null
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          kind?: string
+          owner_id?: string
+          provider?: string
+          secret_encrypted?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -305,6 +491,86 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_settings: {
+        Row: {
+          business_name: string | null
+          config: Json
+          logo_url: string | null
+          owner_id: string
+          primary_color: string | null
+          template: string
+          updated_at: string
+          video_required: boolean
+          video_url: string | null
+          welcome_text: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          config?: Json
+          logo_url?: string | null
+          owner_id: string
+          primary_color?: string | null
+          template?: string
+          updated_at?: string
+          video_required?: boolean
+          video_url?: string | null
+          welcome_text?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          config?: Json
+          logo_url?: string | null
+          owner_id?: string
+          primary_color?: string | null
+          template?: string
+          updated_at?: string
+          video_required?: boolean
+          video_url?: string | null
+          welcome_text?: string | null
+        }
+        Relationships: []
+      }
+      print_batches: {
+        Row: {
+          batch_id: string | null
+          count: number
+          created_at: string
+          design: string
+          id: string
+          owner_id: string
+          per_page: number
+          size_preset: string
+        }
+        Insert: {
+          batch_id?: string | null
+          count?: number
+          created_at?: string
+          design?: string
+          id?: string
+          owner_id: string
+          per_page?: number
+          size_preset?: string
+        }
+        Update: {
+          batch_id?: string | null
+          count?: number
+          created_at?: string
+          design?: string
+          id?: string
+          owner_id?: string
+          per_page?: number
+          size_preset?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_batches_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "voucher_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -404,6 +670,111 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_credit_purchases: {
+        Row: {
+          amount: number
+          created_at: string
+          credits: number
+          currency: string
+          id: string
+          owner_id: string
+          payment_method: string
+          reference: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          credits: number
+          currency?: string
+          id?: string
+          owner_id: string
+          payment_method?: string
+          reference?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          credits?: number
+          currency?: string
+          id?: string
+          owner_id?: string
+          payment_method?: string
+          reference?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      sms_messages: {
+        Row: {
+          body: string
+          created_at: string
+          error: string | null
+          id: string
+          kind: string
+          name: string | null
+          owner_id: string
+          parts: number
+          phone: string
+          provider_ref: string | null
+          status: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          name?: string | null
+          owner_id: string
+          parts?: number
+          phone: string
+          provider_ref?: string | null
+          status?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          name?: string | null
+          owner_id?: string
+          parts?: number
+          phone?: string
+          provider_ref?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      sms_templates: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -468,6 +839,39 @@ export type Database = {
           },
         ]
       }
+      telegram_bots: {
+        Row: {
+          bot_key: string
+          chat_id: string | null
+          created_at: string
+          enabled: boolean
+          id: string
+          owner_id: string
+          token_encrypted: string | null
+          updated_at: string
+        }
+        Insert: {
+          bot_key: string
+          chat_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          owner_id: string
+          token_encrypted?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bot_key?: string
+          chat_id?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          owner_id?: string
+          token_encrypted?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -493,6 +897,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           id: string
           name: string
           plan_id: string | null
@@ -502,6 +907,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           id?: string
           name: string
           plan_id?: string | null
@@ -511,6 +917,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           id?: string
           name?: string
           plan_id?: string | null
@@ -534,12 +941,48 @@ export type Database = {
           },
         ]
       }
+      voucher_prefix_rules: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          owner_id: string
+          plan_id: string | null
+          prefix: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          owner_id: string
+          plan_id?: string | null
+          prefix: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          owner_id?: string
+          plan_id?: string | null
+          prefix?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voucher_prefix_rules_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vouchers: {
         Row: {
           batch_id: string | null
           code: string
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           expires_at: string | null
           id: string
           plan_id: string | null
@@ -554,6 +997,7 @@ export type Database = {
           code: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           expires_at?: string | null
           id?: string
           plan_id?: string | null
@@ -568,6 +1012,7 @@ export type Database = {
           code?: string
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           expires_at?: string | null
           id?: string
           plan_id?: string | null
@@ -607,6 +1052,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallet: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          owner_id: string
+          sms_credits: number
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          owner_id: string
+          sms_credits?: number
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          owner_id?: string
+          sms_credits?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          amount: number
+          created_at: string
+          destination: string
+          fee: number
+          id: string
+          method: string
+          net: number
+          notes: string | null
+          owner_id: string
+          reference: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          destination: string
+          fee?: number
+          id?: string
+          method?: string
+          net: number
+          notes?: string | null
+          owner_id: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          destination?: string
+          fee?: number
+          id?: string
+          method?: string
+          net?: number
+          notes?: string | null
+          owner_id?: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
