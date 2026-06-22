@@ -22,16 +22,13 @@ function ClientsPage() {
       html={html}
       deps={[sessions]}
       hydrate={(root) => {
-        const active = (sessions ?? []).filter((s: { ended_at?: string | null }) => !s.ended_at);
+        const active = (sessions ?? []).filter(s => !s.ended_at);
         setText(root, "cl-cnt", `${active.length} online`);
-        setHTML(root, "cl-tbody", active.length ? active.map((s: {
-          username?: string | null; mac_address?: string | null; ip_address?: string | null;
-          started_at?: string | null; bytes_in?: number; bytes_out?: number; routers?: { name?: string } | null;
-        }) => `<tr>
+        setHTML(root, "cl-tbody", active.length ? active.map(s => `<tr>
           <td>${esc(s.username ?? "—")}</td>
-          <td>${esc(s.mac_address ?? "—")}</td>
-          <td>${esc(s.ip_address ?? "—")}</td>
-          <td>${esc(s.routers?.name ?? "—")}</td>
+          <td>${esc(s.mac ?? "—")}</td>
+          <td>${esc(s.ip ?? "—")}</td>
+          <td>${esc((s.routers as { name?: string } | null)?.name ?? "—")}</td>
           <td>${s.started_at ? new Date(s.started_at).toLocaleString() : "—"}</td>
           <td>${((s.bytes_in ?? 0) / 1024 / 1024).toFixed(1)} MB ↓ / ${((s.bytes_out ?? 0) / 1024 / 1024).toFixed(1)} MB ↑</td>
         </tr>`).join("") : `<tr><td colspan="6"><div class="empty"><span class="empty-ico">📡</span>No active sessions</div></td></tr>`);
