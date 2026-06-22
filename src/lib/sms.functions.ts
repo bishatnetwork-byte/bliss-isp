@@ -190,7 +190,7 @@ export const sendBulkSms = createServerFn({ method: "POST" })
     return {
       ok: true,
       sent: results.filter(r => r.status === "delivered").length,
-      failed: refundParts / parts,
+      failed: results.filter(r => r.status === "failed").length,
       smsCreditsRemaining: w?.sms_credits ?? 0,
       results,
     };
