@@ -342,9 +342,11 @@ function AdminPage() {
           saving={update.isPending}
         />
       ) : null}
-      {access?.isPlatformAdmin ? <PlatformGatewaysCard /> : null}
-      {access?.isPlatformAdmin ? <PlatformSmsRevenueCard /> : null}
-      <div className="card" style={{ marginTop: 16 }}>
+      {access?.isPlatformAdmin ? <div data-admin-extra="gateways"><PlatformGatewaysCard /></div> : null}
+      {access?.isPlatformAdmin ? <div data-admin-extra="fees"><PlatformSmsRevenueCard /></div> : null}
+      <MikrotikOverviewCard />
+      <div className="card" data-admin-extra="fees" style={{ marginTop: 16 }}>
+
         <div className="card-hd">
           <span className="card-title">📜 Activity Log</span>
           <span className="badge bg-blue">{audit.data?.length ?? 0} events</span>
