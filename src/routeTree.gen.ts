@@ -14,16 +14,24 @@ import { Route as PortalRouteImport } from './routes/portal'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWithdrawRouteImport } from './routes/_authenticated/withdraw'
+import { Route as AuthenticatedWifiusersRouteImport } from './routes/_authenticated/wifiusers'
+import { Route as AuthenticatedWifipricesRouteImport } from './routes/_authenticated/wifiprices'
 import { Route as AuthenticatedVouchersRouteImport } from './routes/_authenticated/vouchers'
-import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedSmscreditRouteImport } from './routes/_authenticated/smscredit'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedSessionsRouteImport } from './routes/_authenticated/sessions'
-import { Route as AuthenticatedRoutersRouteImport } from './routes/_authenticated/routers'
-import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
+import { Route as AuthenticatedSellRouteImport } from './routes/_authenticated/sell'
+import { Route as AuthenticatedRouterinfoRouteImport } from './routes/_authenticated/routerinfo'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedRecyclebinRouteImport } from './routes/_authenticated/recyclebin'
+import { Route as AuthenticatedPrintcenterRouteImport } from './routes/_authenticated/printcenter'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
-import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticated/invoices'
+import { Route as AuthenticatedMikrotiksRouteImport } from './routes/_authenticated/mikrotiks'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
+import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
+import { Route as AuthenticatedCaptiveRouteImport } from './routes/_authenticated/captive'
+import { Route as AuthenticatedBulksmsRouteImport } from './routes/_authenticated/bulksms'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicWebhooksMpesaRouteImport } from './routes/api/public/webhooks/mpesa'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -50,14 +58,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWithdrawRoute = AuthenticatedWithdrawRouteImport.update({
+  id: '/withdraw',
+  path: '/withdraw',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWifiusersRoute = AuthenticatedWifiusersRouteImport.update({
+  id: '/wifiusers',
+  path: '/wifiusers',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWifipricesRoute = AuthenticatedWifipricesRouteImport.update({
+  id: '/wifiprices',
+  path: '/wifiprices',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedVouchersRoute = AuthenticatedVouchersRouteImport.update({
   id: '/vouchers',
   path: '/vouchers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
+const AuthenticatedSmscreditRoute = AuthenticatedSmscreditRouteImport.update({
+  id: '/smscredit',
+  path: '/smscredit',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -65,29 +88,40 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSessionsRoute = AuthenticatedSessionsRouteImport.update({
-  id: '/sessions',
-  path: '/sessions',
+const AuthenticatedSellRoute = AuthenticatedSellRouteImport.update({
+  id: '/sell',
+  path: '/sell',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedRoutersRoute = AuthenticatedRoutersRouteImport.update({
-  id: '/routers',
-  path: '/routers',
+const AuthenticatedRouterinfoRoute = AuthenticatedRouterinfoRouteImport.update({
+  id: '/routerinfo',
+  path: '/routerinfo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedPlansRoute = AuthenticatedPlansRouteImport.update({
-  id: '/plans',
-  path: '/plans',
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRecyclebinRoute = AuthenticatedRecyclebinRouteImport.update({
+  id: '/recyclebin',
+  path: '/recyclebin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPrintcenterRoute =
+  AuthenticatedPrintcenterRouteImport.update({
+    id: '/printcenter',
+    path: '/printcenter',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedInvoicesRoute = AuthenticatedInvoicesRouteImport.update({
-  id: '/invoices',
-  path: '/invoices',
+const AuthenticatedMikrotiksRoute = AuthenticatedMikrotiksRouteImport.update({
+  id: '/mikrotiks',
+  path: '/mikrotiks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -95,9 +129,24 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
+const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCaptiveRoute = AuthenticatedCaptiveRouteImport.update({
+  id: '/captive',
+  path: '/captive',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBulksmsRoute = AuthenticatedBulksmsRouteImport.update({
+  id: '/bulksms',
+  path: '/bulksms',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicWebhooksMpesaRoute = ApiPublicWebhooksMpesaRouteImport.update({
@@ -111,16 +160,24 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/portal': typeof PortalRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/customers': typeof AuthenticatedCustomersRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/bulksms': typeof AuthenticatedBulksmsRoute
+  '/captive': typeof AuthenticatedCaptiveRoute
+  '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/invoices': typeof AuthenticatedInvoicesRoute
+  '/mikrotiks': typeof AuthenticatedMikrotiksRoute
   '/payments': typeof AuthenticatedPaymentsRoute
-  '/plans': typeof AuthenticatedPlansRoute
-  '/routers': typeof AuthenticatedRoutersRoute
-  '/sessions': typeof AuthenticatedSessionsRoute
+  '/printcenter': typeof AuthenticatedPrintcenterRoute
+  '/recyclebin': typeof AuthenticatedRecyclebinRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/routerinfo': typeof AuthenticatedRouterinfoRoute
+  '/sell': typeof AuthenticatedSellRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/users': typeof AuthenticatedUsersRoute
+  '/smscredit': typeof AuthenticatedSmscreditRoute
   '/vouchers': typeof AuthenticatedVouchersRoute
+  '/wifiprices': typeof AuthenticatedWifipricesRoute
+  '/wifiusers': typeof AuthenticatedWifiusersRoute
+  '/withdraw': typeof AuthenticatedWithdrawRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRoutesByTo {
@@ -128,16 +185,24 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/portal': typeof PortalRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/customers': typeof AuthenticatedCustomersRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/bulksms': typeof AuthenticatedBulksmsRoute
+  '/captive': typeof AuthenticatedCaptiveRoute
+  '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/invoices': typeof AuthenticatedInvoicesRoute
+  '/mikrotiks': typeof AuthenticatedMikrotiksRoute
   '/payments': typeof AuthenticatedPaymentsRoute
-  '/plans': typeof AuthenticatedPlansRoute
-  '/routers': typeof AuthenticatedRoutersRoute
-  '/sessions': typeof AuthenticatedSessionsRoute
+  '/printcenter': typeof AuthenticatedPrintcenterRoute
+  '/recyclebin': typeof AuthenticatedRecyclebinRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/routerinfo': typeof AuthenticatedRouterinfoRoute
+  '/sell': typeof AuthenticatedSellRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/users': typeof AuthenticatedUsersRoute
+  '/smscredit': typeof AuthenticatedSmscreditRoute
   '/vouchers': typeof AuthenticatedVouchersRoute
+  '/wifiprices': typeof AuthenticatedWifipricesRoute
+  '/wifiusers': typeof AuthenticatedWifiusersRoute
+  '/withdraw': typeof AuthenticatedWithdrawRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRoutesById {
@@ -147,16 +212,24 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/portal': typeof PortalRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/_authenticated/customers': typeof AuthenticatedCustomersRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/bulksms': typeof AuthenticatedBulksmsRoute
+  '/_authenticated/captive': typeof AuthenticatedCaptiveRoute
+  '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
+  '/_authenticated/mikrotiks': typeof AuthenticatedMikrotiksRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
-  '/_authenticated/plans': typeof AuthenticatedPlansRoute
-  '/_authenticated/routers': typeof AuthenticatedRoutersRoute
-  '/_authenticated/sessions': typeof AuthenticatedSessionsRoute
+  '/_authenticated/printcenter': typeof AuthenticatedPrintcenterRoute
+  '/_authenticated/recyclebin': typeof AuthenticatedRecyclebinRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/routerinfo': typeof AuthenticatedRouterinfoRoute
+  '/_authenticated/sell': typeof AuthenticatedSellRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/smscredit': typeof AuthenticatedSmscreditRoute
   '/_authenticated/vouchers': typeof AuthenticatedVouchersRoute
+  '/_authenticated/wifiprices': typeof AuthenticatedWifipricesRoute
+  '/_authenticated/wifiusers': typeof AuthenticatedWifiusersRoute
+  '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRouteTypes {
@@ -166,16 +239,24 @@ export interface FileRouteTypes {
     | '/auth'
     | '/portal'
     | '/sitemap.xml'
-    | '/customers'
+    | '/admin'
+    | '/bulksms'
+    | '/captive'
+    | '/clients'
     | '/dashboard'
-    | '/invoices'
+    | '/mikrotiks'
     | '/payments'
-    | '/plans'
-    | '/routers'
-    | '/sessions'
+    | '/printcenter'
+    | '/recyclebin'
+    | '/reports'
+    | '/routerinfo'
+    | '/sell'
     | '/settings'
-    | '/users'
+    | '/smscredit'
     | '/vouchers'
+    | '/wifiprices'
+    | '/wifiusers'
+    | '/withdraw'
     | '/api/public/webhooks/mpesa'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -183,16 +264,24 @@ export interface FileRouteTypes {
     | '/auth'
     | '/portal'
     | '/sitemap.xml'
-    | '/customers'
+    | '/admin'
+    | '/bulksms'
+    | '/captive'
+    | '/clients'
     | '/dashboard'
-    | '/invoices'
+    | '/mikrotiks'
     | '/payments'
-    | '/plans'
-    | '/routers'
-    | '/sessions'
+    | '/printcenter'
+    | '/recyclebin'
+    | '/reports'
+    | '/routerinfo'
+    | '/sell'
     | '/settings'
-    | '/users'
+    | '/smscredit'
     | '/vouchers'
+    | '/wifiprices'
+    | '/wifiusers'
+    | '/withdraw'
     | '/api/public/webhooks/mpesa'
   id:
     | '__root__'
@@ -201,16 +290,24 @@ export interface FileRouteTypes {
     | '/auth'
     | '/portal'
     | '/sitemap.xml'
-    | '/_authenticated/customers'
+    | '/_authenticated/admin'
+    | '/_authenticated/bulksms'
+    | '/_authenticated/captive'
+    | '/_authenticated/clients'
     | '/_authenticated/dashboard'
-    | '/_authenticated/invoices'
+    | '/_authenticated/mikrotiks'
     | '/_authenticated/payments'
-    | '/_authenticated/plans'
-    | '/_authenticated/routers'
-    | '/_authenticated/sessions'
+    | '/_authenticated/printcenter'
+    | '/_authenticated/recyclebin'
+    | '/_authenticated/reports'
+    | '/_authenticated/routerinfo'
+    | '/_authenticated/sell'
     | '/_authenticated/settings'
-    | '/_authenticated/users'
+    | '/_authenticated/smscredit'
     | '/_authenticated/vouchers'
+    | '/_authenticated/wifiprices'
+    | '/_authenticated/wifiusers'
+    | '/_authenticated/withdraw'
     | '/api/public/webhooks/mpesa'
   fileRoutesById: FileRoutesById
 }
@@ -260,6 +357,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/withdraw': {
+      id: '/_authenticated/withdraw'
+      path: '/withdraw'
+      fullPath: '/withdraw'
+      preLoaderRoute: typeof AuthenticatedWithdrawRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/wifiusers': {
+      id: '/_authenticated/wifiusers'
+      path: '/wifiusers'
+      fullPath: '/wifiusers'
+      preLoaderRoute: typeof AuthenticatedWifiusersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/wifiprices': {
+      id: '/_authenticated/wifiprices'
+      path: '/wifiprices'
+      fullPath: '/wifiprices'
+      preLoaderRoute: typeof AuthenticatedWifipricesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/vouchers': {
       id: '/_authenticated/vouchers'
       path: '/vouchers'
@@ -267,11 +385,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVouchersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/users': {
-      id: '/_authenticated/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedUsersRouteImport
+    '/_authenticated/smscredit': {
+      id: '/_authenticated/smscredit'
+      path: '/smscredit'
+      fullPath: '/smscredit'
+      preLoaderRoute: typeof AuthenticatedSmscreditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -281,25 +399,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/sessions': {
-      id: '/_authenticated/sessions'
-      path: '/sessions'
-      fullPath: '/sessions'
-      preLoaderRoute: typeof AuthenticatedSessionsRouteImport
+    '/_authenticated/sell': {
+      id: '/_authenticated/sell'
+      path: '/sell'
+      fullPath: '/sell'
+      preLoaderRoute: typeof AuthenticatedSellRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/routers': {
-      id: '/_authenticated/routers'
-      path: '/routers'
-      fullPath: '/routers'
-      preLoaderRoute: typeof AuthenticatedRoutersRouteImport
+    '/_authenticated/routerinfo': {
+      id: '/_authenticated/routerinfo'
+      path: '/routerinfo'
+      fullPath: '/routerinfo'
+      preLoaderRoute: typeof AuthenticatedRouterinfoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/plans': {
-      id: '/_authenticated/plans'
-      path: '/plans'
-      fullPath: '/plans'
-      preLoaderRoute: typeof AuthenticatedPlansRouteImport
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recyclebin': {
+      id: '/_authenticated/recyclebin'
+      path: '/recyclebin'
+      fullPath: '/recyclebin'
+      preLoaderRoute: typeof AuthenticatedRecyclebinRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/printcenter': {
+      id: '/_authenticated/printcenter'
+      path: '/printcenter'
+      fullPath: '/printcenter'
+      preLoaderRoute: typeof AuthenticatedPrintcenterRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/payments': {
@@ -309,11 +441,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/invoices': {
-      id: '/_authenticated/invoices'
-      path: '/invoices'
-      fullPath: '/invoices'
-      preLoaderRoute: typeof AuthenticatedInvoicesRouteImport
+    '/_authenticated/mikrotiks': {
+      id: '/_authenticated/mikrotiks'
+      path: '/mikrotiks'
+      fullPath: '/mikrotiks'
+      preLoaderRoute: typeof AuthenticatedMikrotiksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -323,11 +455,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/customers': {
-      id: '/_authenticated/customers'
-      path: '/customers'
-      fullPath: '/customers'
-      preLoaderRoute: typeof AuthenticatedCustomersRouteImport
+    '/_authenticated/clients': {
+      id: '/_authenticated/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof AuthenticatedClientsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/captive': {
+      id: '/_authenticated/captive'
+      path: '/captive'
+      fullPath: '/captive'
+      preLoaderRoute: typeof AuthenticatedCaptiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bulksms': {
+      id: '/_authenticated/bulksms'
+      path: '/bulksms'
+      fullPath: '/bulksms'
+      preLoaderRoute: typeof AuthenticatedBulksmsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/webhooks/mpesa': {
@@ -341,29 +494,45 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedBulksmsRoute: typeof AuthenticatedBulksmsRoute
+  AuthenticatedCaptiveRoute: typeof AuthenticatedCaptiveRoute
+  AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
+  AuthenticatedMikrotiksRoute: typeof AuthenticatedMikrotiksRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
-  AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
-  AuthenticatedRoutersRoute: typeof AuthenticatedRoutersRoute
-  AuthenticatedSessionsRoute: typeof AuthenticatedSessionsRoute
+  AuthenticatedPrintcenterRoute: typeof AuthenticatedPrintcenterRoute
+  AuthenticatedRecyclebinRoute: typeof AuthenticatedRecyclebinRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedRouterinfoRoute: typeof AuthenticatedRouterinfoRoute
+  AuthenticatedSellRoute: typeof AuthenticatedSellRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedSmscreditRoute: typeof AuthenticatedSmscreditRoute
   AuthenticatedVouchersRoute: typeof AuthenticatedVouchersRoute
+  AuthenticatedWifipricesRoute: typeof AuthenticatedWifipricesRoute
+  AuthenticatedWifiusersRoute: typeof AuthenticatedWifiusersRoute
+  AuthenticatedWithdrawRoute: typeof AuthenticatedWithdrawRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedBulksmsRoute: AuthenticatedBulksmsRoute,
+  AuthenticatedCaptiveRoute: AuthenticatedCaptiveRoute,
+  AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
+  AuthenticatedMikrotiksRoute: AuthenticatedMikrotiksRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
-  AuthenticatedPlansRoute: AuthenticatedPlansRoute,
-  AuthenticatedRoutersRoute: AuthenticatedRoutersRoute,
-  AuthenticatedSessionsRoute: AuthenticatedSessionsRoute,
+  AuthenticatedPrintcenterRoute: AuthenticatedPrintcenterRoute,
+  AuthenticatedRecyclebinRoute: AuthenticatedRecyclebinRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedRouterinfoRoute: AuthenticatedRouterinfoRoute,
+  AuthenticatedSellRoute: AuthenticatedSellRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedSmscreditRoute: AuthenticatedSmscreditRoute,
   AuthenticatedVouchersRoute: AuthenticatedVouchersRoute,
+  AuthenticatedWifipricesRoute: AuthenticatedWifipricesRoute,
+  AuthenticatedWifiusersRoute: AuthenticatedWifiusersRoute,
+  AuthenticatedWithdrawRoute: AuthenticatedWithdrawRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
