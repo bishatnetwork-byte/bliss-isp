@@ -62,44 +62,31 @@ export const savePortalSettings = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ---- Voucher prefix rules ----
-export const listPrefixRules = createServerFn({ method: "GET" })
+// ---- Voucher prefix rules (one row per tenant) ----
+export const getPrefixRules = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("voucher_prefix_rules").select("*, plans(name)").order("created_at", { ascending: false });
+    const { data, error } = await (context.supabase as never as {
+      rpc: (n: string, a: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+    }).rpc("rpc_ensure_prefix_rules", { _owner: context.userId });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return data;
   });
 
-export const savePrefixRule = createServerFn({ method: "POST" })
+export const savePrefixRules = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
-    id: z.string().uuid().optional(),
-    plan_id: z.string().uuid().nullable().optional(),
-    prefix: z.string().min(1).max(20),
-    enabled: z.boolean().default(true),
+    online_mode: z.enum(["buyer", "custom"]).default("buyer"),
+    online_custom_prefix: z.string().max(20).optional().nullable(),
+    offline_mode: z.string().min(2).max(20),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    if (data.id) {
-      const { error } = await context.supabase.from("voucher_prefix_rules").update({
-        plan_id: data.plan_id ?? null, prefix: data.prefix, enabled: data.enabled,
-      }).eq("id", data.id);
-      if (error) throw new Error(error.message);
-      return { id: data.id };
-    }
-    const { data: ins, error } = await context.supabase.from("voucher_prefix_rules").insert({
-      owner_id: context.userId, plan_id: data.plan_id ?? null, prefix: data.prefix, enabled: data.enabled,
-    }).select("id").single();
-    if (error) throw new Error(error.message);
-    return { id: ins!.id };
-  });
-
-export const deletePrefixRule = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("voucher_prefix_rules").delete().eq("id", data.id);
+    const { error } = await context.supabase.from("voucher_prefix_rules").upsert({
+      owner_id: context.userId,
+      online_mode: data.online_mode,
+      online_custom_prefix: data.online_custom_prefix || null,
+      offline_mode: data.offline_mode.toUpperCase(),
+    } as never);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
