@@ -70,7 +70,7 @@ NODE_ENV=production
 PORT=${APP_PORT}
 HOST=127.0.0.1
 
-# Lovable Cloud / Supabase
+# Lovable Cloud backend credentials. Use the same URL/key for VITE_* and non-VITE_*.
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_URL=

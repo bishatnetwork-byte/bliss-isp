@@ -30,6 +30,17 @@ if (existsSync(ENV_PATH)) {
   console.log(`[adapter] loaded env from ${ENV_PATH}`);
 }
 
+// The VPS .env template includes both browser build keys (VITE_*) and server
+// runtime keys. If only one side is filled in, mirror it before the server
+// bundle initializes so authenticated backend calls can still boot correctly.
+const mirrorEnv = (serverKey, viteKey) => {
+  if (!process.env[serverKey] && process.env[viteKey]) process.env[serverKey] = process.env[viteKey];
+  if (!process.env[viteKey] && process.env[serverKey]) process.env[viteKey] = process.env[serverKey];
+};
+
+mirrorEnv("SUPABASE_URL", "VITE_SUPABASE_URL");
+mirrorEnv("SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY");
+
 const ENTRY = resolve(__dirname, "..", "dist", "server", "server.js");
 
 const mod = await import(ENTRY);
