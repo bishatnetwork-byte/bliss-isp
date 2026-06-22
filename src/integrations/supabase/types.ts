@@ -587,6 +587,42 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_gateways: {
+        Row: {
+          config: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          kind: string
+          provider: string
+          secret_encrypted: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          kind: string
+          provider: string
+          secret_encrypted?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          kind?: string
+          provider?: string
+          secret_encrypted?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       portal_settings: {
         Row: {
           business_name: string | null
@@ -1520,6 +1556,26 @@ export type Database = {
       rpc_generate_voucher_code: {
         Args: { _owner: string; _phone?: string; _source: string }
         Returns: string
+      }
+      rpc_get_platform_gateway: {
+        Args: { _kind: string }
+        Returns: {
+          config: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          kind: string
+          provider: string
+          secret_encrypted: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "platform_gateways"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       rpc_get_portal: { Args: { _owner: string }; Returns: Json }
       rpc_log_event: {
