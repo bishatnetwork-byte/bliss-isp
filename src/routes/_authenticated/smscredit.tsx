@@ -36,27 +36,45 @@ function SmsCreditPage() {
         const price = Number(fees?.sms_price_per_credit ?? 1);
         setText(root, "sms-cost-display", `${price} per SMS`);
 
+        // Top-up method toggle (Mobile Money / Main Wallet)
+        const momoFields = root.querySelector<HTMLElement>("#credit-momo-fields");
+        const walFields = root.querySelector<HTMLElement>("#credit-wallet-fields");
+        root.querySelectorAll<HTMLElement>("[data-cm]").forEach(opt => {
+          opt.removeAttribute("onclick");
+          opt.addEventListener("click", () => {
+            const m = opt.dataset.cm;
+            root.querySelectorAll<HTMLElement>("[data-cm]").forEach(o => o.classList.toggle("sel", o === opt));
+            if (momoFields) momoFields.style.display = m === "momo" ? "" : "none";
+            if (walFields) walFields.style.display = m === "wallet" ? "" : "none";
+          });
+        });
+
         const recalcMomo = () => {
           const amt = Number(getVal(root, "cr-momo-amount")) || 0;
           const credits = Math.floor(amt / price);
+          const el = root.querySelector<HTMLElement>("#cr-momo-calc");
+          if (el) el.style.display = amt > 0 ? "" : "none";
           setText(root, "cr-momo-calc-text", `${credits.toLocaleString()} credits`);
         };
         const recalcWal = () => {
           const amt = Number(getVal(root, "cr-wal-amount")) || 0;
           const credits = Math.floor(amt / price);
+          const el = root.querySelector<HTMLElement>("#cr-wal-calc");
+          if (el) el.style.display = amt > 0 ? "" : "none";
           setText(root, "cr-wal-calc-text", `${credits.toLocaleString()} credits`);
         };
         on(root, "cr-momo-amount", "input", recalcMomo);
         on(root, "cr-wal-amount", "input", recalcWal);
         recalcMomo(); recalcWal();
 
+
         on(root, "cr-wal-btn", "click", async () => {
           const amt = Number(getVal(root, "cr-wal-amount")) || 0;
-          const credits = Math.floor(amt / price);
-          if (credits < 1) return notify("Enter a valid amount", "warning");
+          if (amt < 1000) return notify("Minimum transfer is 1,000", "warning");
+          if (amt > Number(wallet?.balance ?? 0)) return notify("Insufficient wallet balance", "error");
           try {
-            await buy({ data: { credits, payment_method: "wallet" } });
-            notify(`Purchased ${credits} SMS credits`, "success");
+            const r = await buy({ data: { amount: amt } });
+            notify(`Transferred — ${r.credited} credits added`, "success");
             qc.invalidateQueries({ queryKey: ["wallet"] });
             qc.invalidateQueries({ queryKey: ["sms-purchases"] });
           } catch (e) { notify((e as Error).message, "error"); }
@@ -64,21 +82,18 @@ function SmsCreditPage() {
 
         on(root, "cr-momo-btn", "click", async () => {
           const amt = Number(getVal(root, "cr-momo-amount")) || 0;
-          const credits = Math.floor(amt / price);
-          if (credits < 1) return notify("Enter a valid amount", "warning");
-          try {
-            await buy({ data: { credits, payment_method: "mpesa" } });
-            notify(`Purchased ${credits} SMS credits via M-Pesa`, "success");
-            qc.invalidateQueries({ queryKey: ["wallet"] });
-            qc.invalidateQueries({ queryKey: ["sms-purchases"] });
-          } catch (e) { notify((e as Error).message, "error"); }
+          if (amt < 1000) return notify("Minimum top-up is 1,000", "warning");
+          const phone = getVal(root, "cr-momo-phone");
+          if (!phone) return notify("Enter your mobile money phone", "warning");
+          notify("Mobile-money top-up needs MarsPay/Daraja configured — confirm provider to enable", "warning");
         });
+
 
         const rows = (purchases ?? []).map(p => `<tr>
           <td>${new Date(p.created_at).toLocaleString()}</td>
-          <td>${p.credits.toLocaleString()}</td>
-          <td>${fmt(Number(p.amount))}</td>
           <td>${esc(p.payment_method)}</td>
+          <td>${fmt(Number(p.amount))}</td>
+          <td>${p.credits.toLocaleString()}</td>
           <td><span class="badge bg-green">${esc(p.status)}</span></td>
         </tr>`).join("");
         setHTML(root, "credit-history-tbody", rows || `<tr><td colspan="5"><div class="empty">No purchases yet</div></td></tr>`);
