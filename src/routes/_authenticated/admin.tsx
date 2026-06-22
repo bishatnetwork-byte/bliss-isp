@@ -81,6 +81,49 @@ function AdminPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("staff");
   const [editing, setEditing] = useState<{ memberId: string; name: string; tabs: string[] } | null>(null);
+  const [section, setSection] = useState<"all" | "users" | "gateways" | "fees" | "mikrotik">("all");
+
+  // Tag mockup cards into sections so the dropdown can filter them.
+  useEffect(() => {
+    const root = document.querySelector("[data-mockup-page]") as HTMLElement | null;
+    if (!root) return;
+    const map: Record<string, string> = {
+      "platform users": "users",
+      "email gateway": "gateways",
+      "domain provider": "gateways",
+      "chr mikrotik": "mikrotik",
+      "remote access": "mikrotik",
+      "winbox": "mikrotik",
+      "platform fee rates": "fees",
+      "withdraw platform fees": "fees",
+      "fee withdrawal history": "fees",
+      "fee breakdown log": "fees",
+      "billing system wallet": "fees",
+      "voucher prefix": "fees",
+    };
+    const cards = root.querySelectorAll<HTMLElement>(".card");
+    cards.forEach((c) => {
+      const title = (c.querySelector(".card-title")?.textContent ?? "").toLowerCase();
+      let tag = "fees";
+      for (const k in map) if (title.includes(k)) { tag = map[k]; break; }
+      c.setAttribute("data-admin-section", tag);
+    });
+    const feeStats = document.getElementById("ad-fee-stats");
+    if (feeStats) feeStats.setAttribute("data-admin-section", "fees");
+  }, []);
+
+  // Apply section filter
+  useEffect(() => {
+    const root = document.querySelector("[data-mockup-page]") as HTMLElement | null;
+    document.querySelectorAll<HTMLElement>("[data-admin-section]").forEach((el) => {
+      el.style.display = section === "all" || el.getAttribute("data-admin-section") === section ? "" : "none";
+    });
+    document.querySelectorAll<HTMLElement>("[data-admin-extra]").forEach((el) => {
+      const tag = el.getAttribute("data-admin-extra")!;
+      el.style.display = section === "all" || tag === section ? "" : "none";
+    });
+    void root;
+  }, [section, members.data, overview.data]);
 
   const canManage =
     access?.isPlatformAdmin || access?.tenantRole === "owner" || access?.tenantRole === "admin";
