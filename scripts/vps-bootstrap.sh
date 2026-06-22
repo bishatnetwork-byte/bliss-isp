@@ -158,7 +158,7 @@ server {
     }
 
     # Long cache for hashed static assets
-    location ~* ^/_build/ { proxy_pass http://${APP_NAME}_upstream; expires 1y; add_header Cache-Control "public, immutable"; }
+    location ~* ^/(assets|_build)/ { proxy_pass http://${APP_NAME}_upstream; expires 1y; add_header Cache-Control "public, immutable"; }
 }
 EOF
 
