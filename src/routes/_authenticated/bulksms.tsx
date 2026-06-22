@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { MockupPage } from "@/components/MockupPage";
 import html from "@/mockup-pages/bulksms.html?raw";
 import { getWallet } from "@/lib/wallet.functions";
-import { listContacts, listSmsTemplates, listSmsHistory, sendBulkSms, addContact } from "@/lib/sms.functions";
+import { listContacts, listSmsTemplates, listSmsHistory, sendBulkSms, addContact, saveSmsTemplate, deleteSmsTemplate } from "@/lib/sms.functions";
 import { setText, setHTML, getVal, on, esc, notify } from "@/lib/mockup-dom";
 
 export const Route = createFileRoute("/_authenticated/bulksms")({
