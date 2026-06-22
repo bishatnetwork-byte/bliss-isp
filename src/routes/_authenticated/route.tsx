@@ -67,7 +67,27 @@ function AdminShell() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [email, setEmail] = useState("");
+  const [qaOpen, setQaOpen] = useState(false);
+  const qaRef = useRef<HTMLDivElement | null>(null);
   const { data: access } = useAccess();
+
+  const statsFn = useServerFn(getDashboardStats);
+  const { data: stats } = useQuery({
+    queryKey: ["topbar-stats"],
+    queryFn: () => statsFn(),
+    refetchInterval: 15_000,
+    staleTime: 10_000,
+  });
+  const online = stats?.onlineSessions ?? 0;
+
+  useEffect(() => {
+    if (!qaOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (qaRef.current && !qaRef.current.contains(e.target as Node)) setQaOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [qaOpen]);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
