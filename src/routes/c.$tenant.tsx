@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getPortalPayload } from "@/lib/portal.functions";
 import { getCustomerHistory } from "@/lib/customer-portal.functions";
 import { initiateVoucherStk, checkVoucherPaymentStatus } from "@/lib/payments.functions";
+import { subscribeCustomer, listMySubscriptions, cancelMySubscription } from "@/lib/subscriptions.functions";
 
 export const Route = createFileRoute("/c/$tenant")({
   head: () => ({
@@ -24,27 +25,57 @@ function CustomerPortal() {
   const getPortal = useServerFn(getPortalPayload);
   const initStk = useServerFn(initiateVoucherStk);
   const checkStatus = useServerFn(checkVoucherPaymentStatus);
+  const subscribeFn = useServerFn(subscribeCustomer);
+  const listSubs = useServerFn(listMySubscriptions);
+  const cancelSub = useServerFn(cancelMySubscription);
 
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<Awaited<ReturnType<typeof getCustomerHistory>> | null>(null);
   const [plans, setPlans] = useState<Awaited<ReturnType<typeof getPortalPayload>>["plans"]>([]);
+  const [subs, setSubs] = useState<Awaited<ReturnType<typeof listMySubscriptions>>>([]);
   const [renew, setRenew] = useState<RenewState>({ state: "idle" });
   const [error, setError] = useState<string | null>(null);
+  const [subBusy, setSubBusy] = useState(false);
 
   const onLookup = async () => {
     setError(null);
     if (phone.replace(/\D/g, "").length < 7) { setError("Enter a valid phone number"); return; }
     setLoading(true);
     try {
-      const [h, p] = await Promise.all([
+      const [h, p, s] = await Promise.all([
         getHistory({ data: { owner: tenant, phone } }),
         getPortal({ data: { owner: tenant } }),
+        listSubs({ data: { owner: tenant, phone } }),
       ]);
       setHistory(h);
       setPlans(p.plans);
+      setSubs(s);
     } catch (e) { setError((e as Error).message); }
     finally { setLoading(false); }
+  };
+
+  const onSubscribe = async (planId: string) => {
+    setSubBusy(true);
+    try {
+      await subscribeFn({ data: {
+        owner: tenant, phone, plan_id: planId,
+        name: history?.vouchers[0]?.plan_name ? null : null,
+        email: email || null,
+      } });
+      const fresh = await listSubs({ data: { owner: tenant, phone } });
+      setSubs(fresh);
+    } catch (e) { setError((e as Error).message); }
+    finally { setSubBusy(false); }
+  };
+
+  const onCancelSub = async (id: string) => {
+    try {
+      await cancelSub({ data: { owner: tenant, phone, id } });
+      const fresh = await listSubs({ data: { owner: tenant, phone } });
+      setSubs(fresh);
+    } catch (e) { setError((e as Error).message); }
   };
 
   const onRenew = async (planId: string) => {
@@ -175,6 +206,62 @@ function CustomerPortal() {
                   );
                 })}
                 {plans.length === 0 ? <p className="text-sm text-slate-500">No plans available.</p> : null}
+              </div>
+            </section>
+
+            <section className="bg-white rounded-lg border p-5">
+              <h2 className="font-semibold mb-1">Auto-renewals</h2>
+              <p className="text-sm text-slate-500 mb-3">
+                We'll automatically prompt your phone for payment before each plan ends. Cancel anytime.
+              </p>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Optional email for receipts"
+                className="w-full px-3 py-2 border rounded-md text-sm mb-3"
+              />
+              {subs.length > 0 ? (
+                <ul className="divide-y mb-3">
+                  {subs.map(s => (
+                    <li key={s.id} className="py-3 flex items-center justify-between text-sm">
+                      <div>
+                        <div className="font-medium">{(s.plans as { name?: string } | null)?.name ?? "Plan"}</div>
+                        <div className="text-xs text-slate-500">
+                          {s.status === "active"
+                            ? `Next renewal ${new Date(s.next_renewal_at).toLocaleString()}`
+                            : `Status: ${s.status}`}
+                        </div>
+                      </div>
+                      {s.status === "active" ? (
+                        <button
+                          onClick={() => onCancelSub(s.id)}
+                          className="text-xs text-red-600 underline"
+                        >Cancel</button>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-500 mb-3">No active subscriptions.</p>
+              )}
+              <div className="grid sm:grid-cols-2 gap-2">
+                {plans.map(p => {
+                  const already = subs.some(s => s.plan_id === p.id && s.status === "active");
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => onSubscribe(p.id)}
+                      disabled={subBusy || already}
+                      className="border rounded-md p-3 text-left hover:border-slate-400 disabled:opacity-50"
+                    >
+                      <div className="font-medium">{p.name}</div>
+                      <div className="text-sm text-slate-500">
+                        {already ? "Already subscribed" : `Auto-renew ${p.currency} ${p.price}`}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </section>
           </>

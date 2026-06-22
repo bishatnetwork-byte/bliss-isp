@@ -137,6 +137,65 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_subscriptions: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string
+          id: string
+          interval_days: number
+          last_attempt_at: string | null
+          last_error: string | null
+          last_voucher_id: string | null
+          next_renewal_at: string
+          owner_id: string
+          plan_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone: string
+          id?: string
+          interval_days?: number
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_voucher_id?: string | null
+          next_renewal_at: string
+          owner_id: string
+          plan_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string
+          id?: string
+          interval_days?: number
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_voucher_id?: string | null
+          next_renewal_at?: string
+          owner_id?: string
+          plan_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
