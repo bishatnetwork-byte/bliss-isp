@@ -35,7 +35,8 @@ function UsersPage() {
             <tbody>
               {isLoading && <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">Loading…</td></tr>}
               {data?.map((u) => {
-                const role = (u.user_roles?.[0]?.role ?? "viewer") as "admin" | "operator" | "viewer";
+                const rolesArr = u.user_roles as unknown as Array<{ role: string }> | null;
+                const role = (rolesArr?.[0]?.role ?? "viewer") as "admin" | "operator" | "viewer";
                 return (
                   <tr key={u.id} className="border-t border-border">
                     <td className="p-3 font-medium">{u.display_name ?? "—"}</td>
