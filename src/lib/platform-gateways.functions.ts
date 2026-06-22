@@ -16,40 +16,49 @@ export const listPlatformGateways = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("platform_gateways")
       .select("id,kind,provider,enabled,config,secret_encrypted,updated_at");
     if (error) throw new Error(error.message);
     return (data ?? []).map((g) => ({
-      id: g.id, kind: g.kind, provider: g.provider, enabled: g.enabled,
-      config: g.config, has_secret: !!g.secret_encrypted, updated_at: g.updated_at,
+      id: g.id,
+      kind: g.kind,
+      provider: g.provider,
+      enabled: g.enabled,
+      config: g.config,
+      has_secret: !!g.secret_encrypted,
+      updated_at: g.updated_at,
     }));
   });
 
 export const savePlatformGateway = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      kind: z.enum(KINDS),
-      provider: z.string().min(1).max(60),
-      enabled: z.boolean().default(false),
-      config: z.record(z.string(), z.unknown()).default({}),
-      secret: z.string().max(2000).optional().nullable(),
-    }).parse(d),
+    z
+      .object({
+        kind: z.enum(KINDS),
+        provider: z.string().min(1).max(60),
+        enabled: z.boolean().default(false),
+        config: z.record(z.string(), z.unknown()).default({}),
+        secret: z.string().max(2000).optional().nullable(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const update: Record<string, unknown> = {
-      kind: data.kind, provider: data.provider, enabled: data.enabled,
-      config: data.config, updated_by: context.userId, updated_at: new Date().toISOString(),
+      kind: data.kind,
+      provider: data.provider,
+      enabled: data.enabled,
+      config: data.config,
+      updated_by: context.userId,
+      updated_at: new Date().toISOString(),
     };
     if (data.secret) {
       const { encryptSecret } = await import("@/lib/crypto.server");
       update.secret_encrypted = await encryptSecret(data.secret);
     }
-    const { error } = await supabaseAdmin
+    const { error } = await context.supabase
       .from("platform_gateways")
       .upsert(update as never, { onConflict: "kind" });
     if (error) throw new Error(error.message);
@@ -61,8 +70,7 @@ export const getPlatformSmsRevenue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("sms_credit_purchases")
       .select("owner_id,amount,credits,status,created_at")
       .eq("status", "completed")
@@ -87,8 +95,7 @@ export const getPlatformMikrotikOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("routers")
       .select("id,name,host,status,last_seen,owner_id,created_at")
       .order("created_at", { ascending: false })

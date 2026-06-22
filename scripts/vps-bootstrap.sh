@@ -75,7 +75,10 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_URL=
 SUPABASE_PUBLISHABLE_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+
+# Stable local encryption key for saved router/payment/SMS secrets.
+# Generate with: openssl rand -hex 32
+ROUTER_SECRET_KEY=
 
 # Lovable AI
 LOVABLE_API_KEY=

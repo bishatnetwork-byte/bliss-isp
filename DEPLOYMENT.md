@@ -30,7 +30,7 @@ What it does:
 Then edit secrets and restart:
 
 ```bash
-sudo nano /var/www/hotspotpro/.env       # fill Supabase + MarzPay + WizaSMS keys
+sudo nano /var/www/hotspotpro/.env       # fill backend keys + ROUTER_SECRET_KEY
 pm2 restart hotspotpro --update-env
 ```
 
@@ -46,13 +46,13 @@ Add an **A record** (or CNAME → `bliss-isp.com`) for `app.bliss-isp.com` point
 
 Add these **GitHub → Settings → Secrets and variables → Actions**:
 
-| Secret | Value |
-|---|---|
-| `DO_VPS_HOST` | droplet IP (same as bliss-isp) |
-| `DO_VPS_USER` | usually `root` |
-| `DO_VPS_SSH_KEY` | private SSH key (same as bliss-isp) |
-| `DO_VPS_DEPLOY_PATH` *(optional)* | defaults to `/var/www/hotspotpro` |
-| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` *(optional)* | deploy notifications |
+| Secret                                                 | Value                               |
+| ------------------------------------------------------ | ----------------------------------- |
+| `DO_VPS_HOST`                                          | droplet IP (same as bliss-isp)      |
+| `DO_VPS_USER`                                          | usually `root`                      |
+| `DO_VPS_SSH_KEY`                                       | private SSH key (same as bliss-isp) |
+| `DO_VPS_DEPLOY_PATH` _(optional)_                      | defaults to `/var/www/hotspotpro`   |
+| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` _(optional)_ | deploy notifications                |
 
 Every push to `main` runs `.github/workflows/deploy-digitalocean.yml`:
 rsync → `npm install` → `npm run build` → `pm2 reload hotspotpro`.
@@ -66,9 +66,9 @@ sync, etc.) execute **inside the Node process running on the droplet**.
 Any `fetch(...)` they make leaves the VPS interface, so providers see a
 single static IP — whitelist that IP once on:
 
-* **MarsPay** dashboard → API IP allowlist
-* **WizaSMS** dashboard → IP restrictions
-* **Each tenant's MikroTik** → only accept REST from `<VPS_IP>` on the
+- **MarsPay** dashboard → API IP allowlist
+- **WizaSMS** dashboard → IP restrictions
+- **Each tenant's MikroTik** → only accept REST from `<VPS_IP>` on the
   `www-ssl` service.
 
 Clients still talk to `https://app.bliss-isp.com`; Nginx
@@ -91,6 +91,6 @@ sudo certbot renew --dry-run                          # test SSL renewal
 
 ## 6. Coexistence with Bliss-ISP
 
-* Bliss-ISP static site keeps serving on its own domain (no changes).
-* HotspotPro nginx site is scoped to `server_name app.bliss-isp.com` only.
-* Different deploy paths, different PM2 app names, different ports — zero overlap.
+- Bliss-ISP static site keeps serving on its own domain (no changes).
+- HotspotPro nginx site is scoped to `server_name app.bliss-isp.com` only.
+- Different deploy paths, different PM2 app names, different ports — zero overlap.

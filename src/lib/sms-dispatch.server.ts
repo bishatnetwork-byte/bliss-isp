@@ -5,22 +5,44 @@
 // Falls back to a no-op "delivered" result when no gateway is enabled (dev).
 import { decryptSecret } from "@/lib/crypto.server";
 
-type GatewayRow = { enabled: boolean; provider: string | null; config: Record<string, unknown> | null; secret_encrypted: string | null };
+type GatewayRow = {
+  enabled: boolean;
+  provider: string | null;
+  config: Record<string, unknown> | null;
+  secret_encrypted: string | null;
+};
+type GatewayQuery = {
+  eq: (column: string, value: unknown) => GatewayQuery;
+  maybeSingle: () => Promise<{ data: unknown }>;
+};
+type GatewayDb = {
+  from: (table: "platform_gateways" | "gateways") => { select: (columns: string) => GatewayQuery };
+};
 
 export type DispatchResult = { status: "sent" | "failed"; provider_ref?: string; error?: string };
 
-export async function dispatchSms(_ownerId: string, to: string, body: string): Promise<DispatchResult> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+export async function dispatchSms(
+  _ownerId: string,
+  to: string,
+  body: string,
+  db?: GatewayDb,
+): Promise<DispatchResult> {
+  const client = db ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
   // Platform-wide shared gateway first (admin-managed).
-  const { data: pg } = await supabaseAdmin
-    .from("platform_gateways").select("enabled,provider,config,secret_encrypted")
-    .eq("kind", "sms").maybeSingle();
+  const { data: pg } = await client
+    .from("platform_gateways")
+    .select("enabled,provider,config,secret_encrypted")
+    .eq("kind", "sms")
+    .maybeSingle();
   let gw = pg as GatewayRow | null;
   if (!gw || !gw.enabled) {
     // Legacy fallback: per-tenant gateway (kept for transition).
-    const { data: tg } = await supabaseAdmin
-      .from("gateways").select("enabled,provider,config,secret_encrypted")
-      .eq("owner_id", _ownerId).eq("kind", "sms").maybeSingle();
+    const { data: tg } = await client
+      .from("gateways")
+      .select("enabled,provider,config,secret_encrypted")
+      .eq("owner_id", _ownerId)
+      .eq("kind", "sms")
+      .maybeSingle();
     gw = tg as GatewayRow | null;
   }
   if (!gw || !gw.enabled) {
@@ -32,7 +54,10 @@ export async function dispatchSms(_ownerId: string, to: string, body: string): P
     if (gw.provider === "http" || !gw.provider) return await sendGenericHttp(gw, to, body);
     return { status: "failed", error: `unsupported_provider:${gw.provider}` };
   } catch (e) {
-    return { status: "failed", error: e instanceof Error ? e.message.slice(0, 200) : "send_failed" };
+    return {
+      status: "failed",
+      error: e instanceof Error ? e.message.slice(0, 200) : "send_failed",
+    };
   }
 }
 
@@ -51,7 +76,11 @@ async function sendWizaSms(gw: GatewayRow, to: string, body: string): Promise<Di
   const auth = "Basic " + btoa(`${cfg.username}:${pwd}`);
   const res = await fetch(url, {
     method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: auth },
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: auth,
+    },
     body: JSON.stringify({
       contacts: [phone],
       message: body,
@@ -60,7 +89,11 @@ async function sendWizaSms(gw: GatewayRow, to: string, body: string): Promise<Di
   });
   const text = await res.text();
   let raw: Record<string, unknown> = {};
-  try { raw = text ? JSON.parse(text) : {}; } catch { /* keep raw text */ }
+  try {
+    raw = text ? JSON.parse(text) : {};
+  } catch {
+    /* keep raw text */
+  }
   const status = (raw as { status?: string }).status;
   const ok = res.ok && status !== "error" && status !== "failed";
   if (!ok) {
@@ -80,20 +113,32 @@ function normalizePhoneIntl(p: string): string {
   return p.startsWith("+") ? p : "+" + d;
 }
 
-async function sendAfricasTalking(gw: GatewayRow, to: string, body: string): Promise<DispatchResult> {
+async function sendAfricasTalking(
+  gw: GatewayRow,
+  to: string,
+  body: string,
+): Promise<DispatchResult> {
   const cfg = (gw.config ?? {}) as { username?: string; sender_id?: string; sandbox?: boolean };
   const apiKey = gw.secret_encrypted ? await decryptSecret(gw.secret_encrypted) : "";
   if (!apiKey || !cfg.username) return { status: "failed", error: "missing_credentials" };
-  const base = cfg.sandbox ? "https://api.sandbox.africastalking.com" : "https://api.africastalking.com";
+  const base = cfg.sandbox
+    ? "https://api.sandbox.africastalking.com"
+    : "https://api.africastalking.com";
   const form = new URLSearchParams({ username: cfg.username, to, message: body });
   if (cfg.sender_id) form.set("from", cfg.sender_id);
   const res = await fetch(`${base}/version1/messaging`, {
     method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded", apiKey },
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+      apiKey,
+    },
     body: form.toString(),
   });
   const raw = await res.json().catch(() => ({}));
-  const rec = (raw as { SMSMessageData?: { Recipients?: Array<{ status?: string; messageId?: string }> } })?.SMSMessageData?.Recipients?.[0];
+  const rec = (
+    raw as { SMSMessageData?: { Recipients?: Array<{ status?: string; messageId?: string }> } }
+  )?.SMSMessageData?.Recipients?.[0];
   if (!res.ok || !rec || (rec.status && rec.status !== "Success")) {
     return { status: "failed", error: rec?.status || `http_${res.status}` };
   }
@@ -110,7 +155,11 @@ async function sendGenericHttp(gw: GatewayRow, to: string, body: string): Promis
   const method = String(cfg.method ?? "POST").toUpperCase();
   const phoneParam = String(cfg.phone_param ?? "to");
   const bodyParam = String(cfg.body_param ?? "message");
-  const payload: Record<string, unknown> = { [phoneParam]: to, [bodyParam]: body, ...(cfg.extra as object ?? {}) };
+  const payload: Record<string, unknown> = {
+    [phoneParam]: to,
+    [bodyParam]: body,
+    ...((cfg.extra as object) ?? {}),
+  };
   if (cfg.sender_id) payload[String(cfg.sender_param ?? "from")] = cfg.sender_id;
 
   const headers: Record<string, string> = { Accept: "application/json" };
@@ -121,7 +170,9 @@ async function sendGenericHttp(gw: GatewayRow, to: string, body: string): Promis
   }
   let res: Response;
   if (method === "GET") {
-    const q = new URLSearchParams(Object.fromEntries(Object.entries(payload).map(([k, v]) => [k, String(v)])));
+    const q = new URLSearchParams(
+      Object.fromEntries(Object.entries(payload).map(([k, v]) => [k, String(v)])),
+    );
     res = await fetch(`${url}${url.includes("?") ? "&" : "?"}${q.toString()}`, { headers });
   } else {
     headers["Content-Type"] = "application/json";
@@ -132,7 +183,10 @@ async function sendGenericHttp(gw: GatewayRow, to: string, body: string): Promis
   return { status: "sent", provider_ref: text.slice(0, 80) || undefined };
 }
 
-export function mergePlaceholders(template: string, vars: Record<string, string | null | undefined>): string {
+export function mergePlaceholders(
+  template: string,
+  vars: Record<string, string | null | undefined>,
+): string {
   return template.replace(/\{(\w+)\}/g, (_, k) => {
     const v = vars[k];
     return v == null ? "" : String(v);
