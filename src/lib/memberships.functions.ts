@@ -153,7 +153,7 @@ export const updateTenantMember = createServerFn({ method: "POST" })
       });
       if (!isAdmin) throw new Error("Forbidden");
     }
-    const patch: Record<string, unknown> = {};
+    const patch: { role?: string; allowed_tabs?: string[] } = {};
     if (data.role) patch.role = data.role;
     if (data.allowed_tabs) patch.allowed_tabs = data.allowed_tabs;
     const { error } = await supabase
