@@ -507,17 +507,19 @@ function PlatformGatewaysCard() {
         </div>
         <div className="g2" style={{ alignItems: "start" }}>
           <GwForm
-            title="💳 Payment (MarsPay)"
+            title="💳 Payment (MarzPay)"
             form={payForm}
             setForm={setPayForm}
             hasSecret={!!pay?.has_secret}
             saving={save.isPending}
             fields={[
               { key: "business_id", label: "Business ID" },
-              { key: "username", label: "Username" },
+              { key: "username", label: "API Key", placeholder: "MarzPay API Key (public identifier)" },
               { key: "base_url", label: "Base URL (optional)", placeholder: "https://wallet.marzpay.com/api/v1" },
             ]}
-            secretLabel="API Key"
+            secretLabel="API Secret"
+            showBase64Preview
+            base64User={payForm.config.username || payForm.config.business_id || ""}
             onSave={() => save.mutate({ data: { kind: "payment", provider: payForm.provider, enabled: payForm.enabled, config: payForm.config, secret: payForm.secret || undefined } })}
           />
           <GwForm
