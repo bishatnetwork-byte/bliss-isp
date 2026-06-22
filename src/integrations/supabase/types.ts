@@ -482,6 +482,7 @@ export type Database = {
           is_active: boolean
           is_public: boolean
           name: string
+          owner_id: string | null
           price: number
           rate_limit_down_kbps: number | null
           rate_limit_up_kbps: number | null
@@ -498,6 +499,7 @@ export type Database = {
           is_active?: boolean
           is_public?: boolean
           name: string
+          owner_id?: string | null
           price?: number
           rate_limit_down_kbps?: number | null
           rate_limit_up_kbps?: number | null
@@ -514,6 +516,7 @@ export type Database = {
           is_active?: boolean
           is_public?: boolean
           name?: string
+          owner_id?: string | null
           price?: number
           rate_limit_down_kbps?: number | null
           rate_limit_up_kbps?: number | null
@@ -666,6 +669,7 @@ export type Database = {
           last_seen: string | null
           name: string
           notes: string | null
+          owner_id: string | null
           password_encrypted: string
           port: number
           status: string
@@ -681,6 +685,7 @@ export type Database = {
           last_seen?: string | null
           name: string
           notes?: string | null
+          owner_id?: string | null
           password_encrypted: string
           port?: number
           status?: string
@@ -696,6 +701,7 @@ export type Database = {
           last_seen?: string | null
           name?: string
           notes?: string | null
+          owner_id?: string | null
           password_encrypted?: string
           port?: number
           status?: string
@@ -1400,6 +1406,7 @@ export type Database = {
         Args: { _owner: string; _phone?: string; _source: string }
         Returns: string
       }
+      rpc_get_portal: { Args: { _owner: string }; Returns: Json }
       rpc_mark_batch_printed: {
         Args: { _batch_id: string; _count: number }
         Returns: {
@@ -1424,6 +1431,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      rpc_redeem_voucher_public: {
+        Args: { _code: string; _ip?: string; _mac?: string; _owner: string }
+        Returns: Json
       }
       rpc_refund_sms_credits: { Args: { _n: number }; Returns: number }
       rpc_request_withdrawal: {
