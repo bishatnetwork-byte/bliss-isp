@@ -64,7 +64,7 @@ export const getPlatformSmsRevenue = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("sms_credit_purchases")
-      .select("owner_id,amount,credits,method,status,created_at")
+      .select("owner_id,amount,credits,status,created_at")
       .eq("status", "completed")
       .order("created_at", { ascending: false })
       .limit(500);
