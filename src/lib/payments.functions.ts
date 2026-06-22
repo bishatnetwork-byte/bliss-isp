@@ -50,8 +50,8 @@ export const initiateVoucherStk = createServerFn({ method: "POST" })
     } as never).select("id").single();
     if (pErr || !payment) return { ok: false, error: pErr?.message || "payment_failed" };
 
-    const url = new URL(request.url);
-    const callbackUrl = `${url.protocol}//${url.host}/api/public/webhooks/marzpay`;
+    const base = (data.origin ?? process.env.PUBLIC_BASE_URL ?? "").replace(/\/+$/, "");
+    const callbackUrl = `${base}/api/public/webhooks/marzpay`;
     const { initiateMarzpayStk } = await import("@/lib/marzpay.server");
     const stk = await initiateMarzpayStk({
       ownerId: data.owner, amount: Number(plan.price), phone: data.phone,
