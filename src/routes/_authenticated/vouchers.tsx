@@ -12,8 +12,8 @@ export const Route = createFileRoute("/_authenticated/vouchers")({ component: Vo
 type Voucher = {
   id: string; code: string; status: string;
   created_at: string; expires_at: string | null; used_at: string | null;
+  customer_name: string | null; customer_phone: string | null;
   plans: { name: string; price: number; currency: string; duration_minutes: number } | null;
-  customers: { full_name: string; phone: string | null } | null;
 };
 
 function VouchersPage() {
