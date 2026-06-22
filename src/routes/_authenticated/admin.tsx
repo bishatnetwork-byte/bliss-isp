@@ -12,7 +12,11 @@ import {
 } from "@/lib/memberships.functions";
 import { getPlatformOverview, listAuditLogs } from "@/lib/platform.functions";
 import { useAccess } from "@/hooks/useAccess";
-import { setText } from "@/lib/mockup-dom";
+
+const setText = (id: string, v: string | number) => {
+  const el = document.getElementById(id);
+  if (el) el.textContent = String(v);
+};
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
