@@ -273,6 +273,38 @@ function AdminPage() {
           saving={update.isPending}
         />
       ) : null}
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="card-hd">
+          <span className="card-title">📜 Activity Log</span>
+          <span className="badge bg-blue">{audit.data?.length ?? 0} events</span>
+        </div>
+        <div className="tbl-wrap" style={{ maxHeight: 360, overflowY: "auto" }}>
+          <table>
+            <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
+            <tbody>
+              {audit.isLoading ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 18, color: "var(--t3)" }}>Loading…</td></tr>
+              ) : (audit.data?.length ?? 0) === 0 ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 18, color: "var(--t3)" }}>No events yet</td></tr>
+              ) : (
+                audit.data!.map((r) => (
+                  <tr key={r.id}>
+                    <td style={{ fontSize: 11, color: "var(--t3)", whiteSpace: "nowrap" }}>
+                      {new Date(r.created_at).toLocaleString()}
+                    </td>
+                    <td>{r.actor?.display_name ?? r.actor_id?.slice(0, 8) ?? "system"}</td>
+                    <td><span className="badge bg-purple">{r.action}</span></td>
+                    <td style={{ fontSize: 12 }}>{r.entity ?? "—"}</td>
+                    <td className="mono" style={{ fontSize: 11, color: "var(--t3)", maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {r.metadata ? JSON.stringify(r.metadata) : "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </>
   );
 }
