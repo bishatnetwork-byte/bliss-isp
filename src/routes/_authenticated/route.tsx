@@ -168,6 +168,49 @@ function AdminShell() {
             <div className="page-title">{pageTitle}</div>
           </div>
           <div className="topbar-right">
+            <span
+              className="badge bg-green"
+              title="Online sessions"
+              style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />
+              {online} live
+            </span>
+            <div ref={qaRef} style={{ position: "relative" }}>
+              <button
+                className="tb-btn accent"
+                onClick={() => setQaOpen((o) => !o)}
+                title="Quick actions"
+              >＋ Quick</button>
+              {qaOpen ? (
+                <div
+                  style={{
+                    position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 200,
+                    background: "var(--bg2)", border: "1px solid var(--bd)", borderRadius: 8,
+                    minWidth: 200, padding: 6, boxShadow: "0 10px 30px rgba(0,0,0,.35)",
+                  }}
+                >
+                  {[
+                    { to: "/sell", label: "🛒 New Sale" },
+                    { to: "/vouchers", label: "🎫 New Voucher Batch" },
+                    { to: "/printcenter", label: "🖨️ Print Center" },
+                    { to: "/smscredit", label: "💳 Top up SMS" },
+                    { to: "/clients", label: "👥 Live Clients" },
+                  ].map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setQaOpen(false)}
+                      style={{
+                        display: "block", padding: "8px 10px", borderRadius: 6,
+                        color: "var(--t1)", fontSize: 13, textDecoration: "none",
+                      }}
+                      className="quick-action-item"
+                    >{item.label}</Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <button
               className="theme-btn"
               onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
