@@ -6,14 +6,7 @@
 import { decryptSecret } from "@/lib/crypto.server";
 
 type GatewayRow = { enabled: boolean; provider: string | null; config: Record<string, unknown> | null; secret_encrypted: string | null };
-type GatewayDb = {
-  from: (table: "platform_gateways" | "gateways") => {
-    select: (columns: string) => {
-      eq: (column: string, value: unknown) => unknown;
-      maybeSingle?: () => Promise<{ data: unknown }>;
-    };
-  };
-};
+type GatewayDb = { from: (table: "platform_gateways" | "gateways") => any };
 
 export type DispatchResult = { status: "sent" | "failed"; provider_ref?: string; error?: string };
 
