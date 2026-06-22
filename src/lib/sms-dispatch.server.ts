@@ -43,9 +43,13 @@ async function sendWizaSms(gw: GatewayRow, to: string, body: string): Promise<Di
   const pwd = gw.secret_encrypted ? await decryptSecret(gw.secret_encrypted) : "";
   if (!pwd || !cfg.username) return { status: "failed", error: "missing_credentials" };
   const base = (cfg.base_url || "https://api.wizasms.ug").replace(/\/+$/, "");
+  // Accept any of: https://api.wizasms.ug | https://wizasms.ug | .../v1 | .../API/V1
+  // and route to <base>/sms/send when base already includes a version segment,
+  // otherwise <base>/v1/sms/send.
+  const url = /\/(v1|API\/V1)$/i.test(base) ? `${base}/sms/send` : `${base}/v1/sms/send`;
   const phone = normalizePhoneIntl(to);
   const auth = "Basic " + btoa(`${cfg.username}:${pwd}`);
-  const res = await fetch(`${base}/v1/sms/send`, {
+  const res = await fetch(url, {
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: auth },
     body: JSON.stringify({
