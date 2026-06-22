@@ -37,32 +37,43 @@ export async function dispatchSms(_ownerId: string, to: string, body: string): P
 }
 
 async function sendWizaSms(gw: GatewayRow, to: string, body: string): Promise<DispatchResult> {
-  // WizaSMS Uganda — https://wizasms.ug/API/V1/send-bulk-sms
-  // config: { username, sender_id? }   secret: API password
+  // WizaSMS — https://api.wizasms.ug/v1/sms/send
+  // Auth: Basic base64(username:password). Body JSON: { contacts:[+256…], message, sender_id }.
   const cfg = (gw.config ?? {}) as { username?: string; sender_id?: string; base_url?: string };
   const pwd = gw.secret_encrypted ? await decryptSecret(gw.secret_encrypted) : "";
   if (!pwd || !cfg.username) return { status: "failed", error: "missing_credentials" };
-  const base = (cfg.base_url || "https://wizasms.ug/API/V1").replace(/\/+$/, "");
-  const form = new URLSearchParams({
-    username: cfg.username,
-    password: pwd,
-    senderId: cfg.sender_id || "WIFIZONE",
-    message: body,
-    recipients: to,
-  });
-  const res = await fetch(`${base}/send-bulk-sms`, {
+  const base = (cfg.base_url || "https://api.wizasms.ug").replace(/\/+$/, "");
+  const phone = normalizePhoneIntl(to);
+  const auth = "Basic " + btoa(`${cfg.username}:${pwd}`);
+  const res = await fetch(`${base}/v1/sms/send`, {
     method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
-    body: form.toString(),
+    headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: auth },
+    body: JSON.stringify({
+      contacts: [phone],
+      message: body,
+      sender_id: cfg.sender_id || "WizaSMS",
+    }),
   });
-  const raw = await res.json().catch(() => ({} as Record<string, unknown>));
-  const ok = res.ok && (raw as { status?: string }).status !== "error" && (raw as { Status?: string }).Status !== "error";
-  if (!ok) return { status: "failed", error: ((raw as { message?: string }).message) || `http_${res.status}` };
-  const ref = (raw as { messageId?: string; reference?: string; data?: { id?: string } }).messageId
-    ?? (raw as { reference?: string }).reference
-    ?? (raw as { data?: { id?: string } }).data?.id
-    ?? undefined;
+  const text = await res.text();
+  let raw: Record<string, unknown> = {};
+  try { raw = text ? JSON.parse(text) : {}; } catch { /* keep raw text */ }
+  const status = (raw as { status?: string }).status;
+  const ok = res.ok && status !== "error" && status !== "failed";
+  if (!ok) {
+    const msg = (raw as { message?: string }).message ?? text.slice(0, 160) ?? `http_${res.status}`;
+    return { status: "failed", error: `http_${res.status}:${msg}` };
+  }
+  const data = (raw as { data?: { uuid?: string; id?: string; reference?: string } }).data ?? {};
+  const ref = data.uuid ?? data.reference ?? data.id ?? (raw as { messageId?: string }).messageId;
   return { status: "sent", provider_ref: ref };
+}
+
+function normalizePhoneIntl(p: string): string {
+  const d = (p || "").replace(/\D/g, "");
+  if (d.startsWith("0")) return "+256" + d.slice(1);
+  if (d.startsWith("256")) return "+" + d;
+  if (d.length === 9 && /^[7]/.test(d)) return "+256" + d;
+  return p.startsWith("+") ? p : "+" + d;
 }
 
 async function sendAfricasTalking(gw: GatewayRow, to: string, body: string): Promise<DispatchResult> {
