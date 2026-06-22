@@ -22,11 +22,41 @@ export async function dispatchSms(ownerId: string, to: string, body: string): Pr
   }
   try {
     if (gw.provider === "africastalking") return await sendAfricasTalking(gw, to, body);
+    if (gw.provider === "wizasms") return await sendWizaSms(gw, to, body);
     if (gw.provider === "http" || !gw.provider) return await sendGenericHttp(gw, to, body);
     return { status: "failed", error: `unsupported_provider:${gw.provider}` };
   } catch (e) {
     return { status: "failed", error: e instanceof Error ? e.message.slice(0, 200) : "send_failed" };
   }
+}
+
+async function sendWizaSms(gw: GatewayRow, to: string, body: string): Promise<DispatchResult> {
+  // WizaSMS Uganda — https://wizasms.ug/API/V1/send-bulk-sms
+  // config: { username, sender_id? }   secret: API password
+  const cfg = (gw.config ?? {}) as { username?: string; sender_id?: string; base_url?: string };
+  const pwd = gw.secret_encrypted ? await decryptSecret(gw.secret_encrypted) : "";
+  if (!pwd || !cfg.username) return { status: "failed", error: "missing_credentials" };
+  const base = (cfg.base_url || "https://wizasms.ug/API/V1").replace(/\/+$/, "");
+  const form = new URLSearchParams({
+    username: cfg.username,
+    password: pwd,
+    senderId: cfg.sender_id || "WIFIZONE",
+    message: body,
+    recipients: to,
+  });
+  const res = await fetch(`${base}/send-bulk-sms`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+    body: form.toString(),
+  });
+  const raw = await res.json().catch(() => ({} as Record<string, unknown>));
+  const ok = res.ok && (raw as { status?: string }).status !== "error" && (raw as { Status?: string }).Status !== "error";
+  if (!ok) return { status: "failed", error: ((raw as { message?: string }).message) || `http_${res.status}` };
+  const ref = (raw as { messageId?: string; reference?: string; data?: { id?: string } }).messageId
+    ?? (raw as { reference?: string }).reference
+    ?? (raw as { data?: { id?: string } }).data?.id
+    ?? undefined;
+  return { status: "sent", provider_ref: ref };
 }
 
 async function sendAfricasTalking(gw: GatewayRow, to: string, body: string): Promise<DispatchResult> {
