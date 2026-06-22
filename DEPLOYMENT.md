@@ -30,7 +30,7 @@ What it does:
 Then edit secrets and restart:
 
 ```bash
-sudo nano /var/www/hotspotpro/.env       # fill Supabase + MarzPay + WizaSMS keys
+sudo nano /var/www/hotspotpro/.env       # fill backend keys + ROUTER_SECRET_KEY
 pm2 restart hotspotpro --update-env
 ```
 
