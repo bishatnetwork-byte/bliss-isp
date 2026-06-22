@@ -25,7 +25,7 @@ export const saveBusinessSettings = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("business_settings").upsert({
       owner_id: context.userId, ...data, email: data.email || null,
-    });
+    } as never);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -57,7 +57,7 @@ export const savePortalSettings = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("portal_settings").upsert({
       owner_id: context.userId, ...data,
-    });
+    } as never);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

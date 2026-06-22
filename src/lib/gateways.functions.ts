@@ -34,7 +34,7 @@ export const saveGateway = createServerFn({ method: "POST" })
       const { encryptSecret } = await import("@/lib/crypto.server");
       update.secret_encrypted = await encryptSecret(data.secret);
     }
-    const { error } = await context.supabase.from("gateways").upsert(update, { onConflict: "owner_id,kind" });
+    const { error } = await context.supabase.from("gateways").upsert(update as never, { onConflict: "owner_id,kind" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -70,7 +70,7 @@ export const saveTelegramBot = createServerFn({ method: "POST" })
       const { encryptSecret } = await import("@/lib/crypto.server");
       update.token_encrypted = await encryptSecret(data.token);
     }
-    const { error } = await context.supabase.from("telegram_bots").upsert(update, { onConflict: "owner_id,bot_key" });
+    const { error } = await context.supabase.from("telegram_bots").upsert(update as never, { onConflict: "owner_id,bot_key" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
