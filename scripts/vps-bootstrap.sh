@@ -98,12 +98,10 @@ export NITRO_PRESET=node-server
 export NODE_OPTIONS="--max-old-space-size=4096"
 npm run build
 
-SERVER_ENTRY=""
-for candidate in "dist/server/server.js" "dist/server/index.js" "dist/server/index.mjs" ".output/server/index.mjs" ".nitro/output/server/index.mjs"; do
-  [ -f "$DEPLOY_PATH/$candidate" ] && SERVER_ENTRY="$candidate" && break
-done
-[ -n "$SERVER_ENTRY" ] || die "Could not locate Node server entry after build"
-log "Server entry: $SERVER_ENTRY"
+SERVER_ENTRY="scripts/vps-node-adapter.mjs"
+[ -f "$DEPLOY_PATH/dist/server/server.js" ] || die "Build did not produce dist/server/server.js"
+[ -f "$DEPLOY_PATH/$SERVER_ENTRY" ] || die "Missing $SERVER_ENTRY in repo"
+log "Server entry: $SERVER_ENTRY (wrapping dist/server/server.js)"
 
 # ---------------------------------------------------------------- pm2
 cat > "$DEPLOY_PATH/ecosystem.config.cjs" <<EOF
