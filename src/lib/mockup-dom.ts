@@ -29,7 +29,7 @@ export const on = <K extends keyof HTMLElementEventMap>(
   if (el) el.addEventListener(ev, fn as EventListener);
 };
 
-export const fmt = (n: number, cur = "KES") => `${cur} ` + Math.round(n).toLocaleString();
+export const fmt = (n: number, cur = "UGX") => `${cur} ` + Math.round(n).toLocaleString();
 
 export const esc = (s: unknown): string =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
