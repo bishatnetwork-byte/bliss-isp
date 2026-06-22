@@ -546,6 +546,7 @@ function PlatformGatewaysCard() {
 
 function GwForm({
   title, form, setForm, hasSecret, saving, fields, secretLabel, onSave,
+  showBase64Preview = false, base64User = "",
 }: {
   title: string;
   form: PGForm;
@@ -555,7 +556,12 @@ function GwForm({
   fields: { key: string; label: string; placeholder?: string }[];
   secretLabel: string;
   onSave: () => void;
+  showBase64Preview?: boolean;
+  base64User?: string;
 }) {
+  const b64 = showBase64Preview && base64User && form.secret
+    ? (typeof window !== "undefined" ? window.btoa(`${base64User}:${form.secret}`) : "")
+    : "";
   return (
     <div className="card" style={{ marginBottom: 0 }}>
       <div className="card-hd"><span className="card-title">{title}</span>
@@ -586,6 +592,19 @@ function GwForm({
             onChange={(e) => setForm({ ...form, secret: e.target.value })}
           />
         </div>
+        {showBase64Preview ? (
+          <div className="form-group">
+            <label className="fl">Base64 Authorization Header <span style={{ fontWeight: 400, color: "var(--t4)" }}>(auto-generated)</span></label>
+            <input
+              className="fc mono"
+              readOnly
+              value={b64 ? `Basic ${b64}` : ""}
+              placeholder={hasSecret && !form.secret ? "Re-enter API Secret to preview" : "Fill API Key + API Secret above"}
+              style={{ fontSize: 11 }}
+            />
+            <div className="fhint">Base64(API Key : API Secret). The server sends this on every MarzPay request — you don't need to paste it anywhere.</div>
+          </div>
+        ) : null}
         <button className="btn btn-p" disabled={saving} onClick={onSave}>{saving ? "Saving…" : "Save"}</button>
       </div>
     </div>
