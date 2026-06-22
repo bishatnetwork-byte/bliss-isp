@@ -208,6 +208,62 @@ function CustomerPortal() {
                 {plans.length === 0 ? <p className="text-sm text-slate-500">No plans available.</p> : null}
               </div>
             </section>
+
+            <section className="bg-white rounded-lg border p-5">
+              <h2 className="font-semibold mb-1">Auto-renewals</h2>
+              <p className="text-sm text-slate-500 mb-3">
+                We'll automatically prompt your phone for payment before each plan ends. Cancel anytime.
+              </p>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Optional email for receipts"
+                className="w-full px-3 py-2 border rounded-md text-sm mb-3"
+              />
+              {subs.length > 0 ? (
+                <ul className="divide-y mb-3">
+                  {subs.map(s => (
+                    <li key={s.id} className="py-3 flex items-center justify-between text-sm">
+                      <div>
+                        <div className="font-medium">{(s.plans as { name?: string } | null)?.name ?? "Plan"}</div>
+                        <div className="text-xs text-slate-500">
+                          {s.status === "active"
+                            ? `Next renewal ${new Date(s.next_renewal_at).toLocaleString()}`
+                            : `Status: ${s.status}`}
+                        </div>
+                      </div>
+                      {s.status === "active" ? (
+                        <button
+                          onClick={() => onCancelSub(s.id)}
+                          className="text-xs text-red-600 underline"
+                        >Cancel</button>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-500 mb-3">No active subscriptions.</p>
+              )}
+              <div className="grid sm:grid-cols-2 gap-2">
+                {plans.map(p => {
+                  const already = subs.some(s => s.plan_id === p.id && s.status === "active");
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => onSubscribe(p.id)}
+                      disabled={subBusy || already}
+                      className="border rounded-md p-3 text-left hover:border-slate-400 disabled:opacity-50"
+                    >
+                      <div className="font-medium">{p.name}</div>
+                      <div className="text-sm text-slate-500">
+                        {already ? "Already subscribed" : `Auto-renew ${p.currency} ${p.price}`}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
           </>
         ) : null}
       </main>
