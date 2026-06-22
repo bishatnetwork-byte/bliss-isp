@@ -32,16 +32,27 @@ export async function initiateMarzpayStk(args: {
 }): Promise<StkResult> {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: gw } = await supabaseAdmin
-      .from("gateways")
-      .select("enabled,config,secret_encrypted")
-      .eq("owner_id", args.ownerId)
+    // Platform-wide MarsPay first.
+    const { data: pg } = await supabaseAdmin
+      .from("platform_gateways")
+      .select("enabled,config,secret_encrypted,provider")
       .eq("kind", "payment")
-      .eq("provider", "marzpay")
       .maybeSingle();
+    let gw = pg as { enabled: boolean; config: Record<string, unknown> | null; secret_encrypted: string | null; provider?: string } | null;
+    if (!gw || !gw.enabled || (gw.provider && gw.provider !== "marzpay")) {
+      const { data: tg } = await supabaseAdmin
+        .from("gateways")
+        .select("enabled,config,secret_encrypted")
+        .eq("owner_id", args.ownerId)
+        .eq("kind", "payment")
+        .eq("provider", "marzpay")
+        .maybeSingle();
+      gw = tg as typeof gw;
+    }
 
     if (!gw || !gw.enabled) return { ok: false, error: "gateway_disabled" };
     if (!gw.secret_encrypted) return { ok: false, error: "missing_credentials" };
+
 
     const cfg = (gw.config ?? {}) as MarzpayConfig;
     const apiKey = await decryptSecret(gw.secret_encrypted);
