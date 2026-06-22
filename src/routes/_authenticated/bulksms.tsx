@@ -21,6 +21,8 @@ function BulkSmsPage() {
   const h = useServerFn(listSmsHistory);
   const sendFn = useServerFn(sendBulkSms);
   const addC = useServerFn(addContact);
+  const saveTpl = useServerFn(saveSmsTemplate);
+  const delTpl = useServerFn(deleteSmsTemplate);
 
   const { data: wallet } = useQuery({ queryKey: ["wallet"], queryFn: () => w(), refetchInterval: 15000 });
   const { data: contacts } = useQuery({ queryKey: ["contacts"], queryFn: () => c() });
