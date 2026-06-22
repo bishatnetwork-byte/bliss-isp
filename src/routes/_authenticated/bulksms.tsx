@@ -38,7 +38,7 @@ function BulkSmsPage() {
     <MockupPage
       title="Bulk SMS"
       html={html}
-      deps={[wallet, contacts, templates, history]}
+      deps={[wallet, contacts, templates, history, campaigns]}
       hydrate={(root) => {
         setText(root, "sms-cr-avail", wallet?.sms_credits ?? 0);
 
