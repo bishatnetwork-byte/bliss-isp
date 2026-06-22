@@ -216,6 +216,65 @@ function BulkSmsPage() {
           } catch (e) { notify((e as Error).message, "error"); }
         });
 
+        // Scheduled campaigns panel — appended after the history table
+        const historyHost = root.querySelector<HTMLElement>("#sms-history-tbody")?.closest("section, .card, div");
+        if (historyHost && !root.querySelector("#sms-campaigns-panel")) {
+          const panel = document.createElement("div");
+          panel.id = "sms-campaigns-panel";
+          panel.style.cssText = "margin-top:16px;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)";
+          panel.innerHTML = `
+            <div style="font-weight:600;margin-bottom:8px">Scheduled campaigns</div>
+            <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+              <input id="camp-title" placeholder="Campaign title" style="flex:1;min-width:140px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px"/>
+              <input id="camp-when" type="datetime-local" style="padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px"/>
+              <button id="camp-create" class="btn btn-sm btn-primary">Schedule</button>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Uses the current message body and recipient chips above.</div>
+            <div id="camp-list"></div>`;
+          historyHost.parentElement?.appendChild(panel);
+        }
+
+        setHTML(root, "camp-list",
+          (campaigns ?? []).map(c => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid var(--border);font-size:12px">
+            <div>
+              <strong>${esc(c.title)}</strong>
+              <span class="muted" style="margin-left:6px">${new Date(c.scheduled_at).toLocaleString()} · ${Array.isArray(c.recipients) ? c.recipients.length : 0} recipients</span>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span class="badge ${c.status === "sent" ? "bg-green" : c.status === "cancelled" ? "bg-red" : ""}">${esc(c.status)}${c.status === "sent" ? ` · ${c.sent_count}/${(c.sent_count ?? 0) + (c.failed_count ?? 0)}` : ""}</span>
+              ${c.status === "pending" ? `<button data-camp-cancel="${esc(c.id)}" class="btn btn-xs btn-ghost" style="color:var(--red)">Cancel</button>` : ""}
+            </div>
+          </div>`).join("") || `<div class="empty" style="padding:12px;text-align:center;color:var(--muted);font-size:12px">No scheduled campaigns</div>`);
+
+        root.querySelectorAll<HTMLButtonElement>("[data-camp-cancel]").forEach(b =>
+          b.addEventListener("click", async () => {
+            try {
+              await cancelCamp({ data: { id: b.dataset.campCancel! } });
+              notify("Campaign cancelled", "success");
+              qc.invalidateQueries({ queryKey: ["sms-campaigns"] });
+            } catch (err) { notify((err as Error).message, "error"); }
+          }));
+
+        on(root, "camp-create", "click", async () => {
+          const title = getVal(root, "camp-title");
+          const when = getVal(root, "camp-when");
+          const body = getVal(root, "sms-msg");
+          if (!title || !when) return notify("Title and time required", "warning");
+          if (!body) return notify("Compose the message above first", "warning");
+          if (bulkChips.length === 0) return notify("Add recipients above", "warning");
+          const recipients = bulkChips.map(phone => {
+            const ct = contacts?.find(c => c.phone === phone);
+            return { phone, name: ct?.name ?? null };
+          });
+          try {
+            await createCamp({ data: { title, body, recipients, scheduled_at: new Date(when).toISOString() } });
+            notify("Campaign scheduled", "success");
+            (root.querySelector<HTMLInputElement>("#camp-title")!).value = "";
+            (root.querySelector<HTMLInputElement>("#camp-when")!).value = "";
+            qc.invalidateQueries({ queryKey: ["sms-campaigns"] });
+          } catch (err) { notify((err as Error).message, "error"); }
+        });
+
         renderChips(); updateSmsCount();
       }}
     />
