@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PTenantRouteImport } from './routes/p.$tenant'
+import { Route as CTenantRouteImport } from './routes/c.$tenant'
 import { Route as AuthenticatedWithdrawRouteImport } from './routes/_authenticated/withdraw'
 import { Route as AuthenticatedWifiusersRouteImport } from './routes/_authenticated/wifiusers'
 import { Route as AuthenticatedWifipricesRouteImport } from './routes/_authenticated/wifiprices'
@@ -63,6 +64,11 @@ const IndexRoute = IndexRouteImport.update({
 const PTenantRoute = PTenantRouteImport.update({
   id: '/p/$tenant',
   path: '/p/$tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CTenantRoute = CTenantRouteImport.update({
+  id: '/c/$tenant',
+  path: '/c/$tenant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWithdrawRoute = AuthenticatedWithdrawRouteImport.update({
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/wifiprices': typeof AuthenticatedWifipricesRoute
   '/wifiusers': typeof AuthenticatedWifiusersRoute
   '/withdraw': typeof AuthenticatedWithdrawRoute
+  '/c/$tenant': typeof CTenantRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/wifiprices': typeof AuthenticatedWifipricesRoute
   '/wifiusers': typeof AuthenticatedWifiusersRoute
   '/withdraw': typeof AuthenticatedWithdrawRoute
+  '/c/$tenant': typeof CTenantRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/_authenticated/wifiprices': typeof AuthenticatedWifipricesRoute
   '/_authenticated/wifiusers': typeof AuthenticatedWifiusersRoute
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
+  '/c/$tenant': typeof CTenantRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/wifiprices'
     | '/wifiusers'
     | '/withdraw'
+    | '/c/$tenant'
     | '/p/$tenant'
     | '/api/public/connect'
     | '/api/public/cron/dispatch-campaigns'
@@ -356,6 +366,7 @@ export interface FileRouteTypes {
     | '/wifiprices'
     | '/wifiusers'
     | '/withdraw'
+    | '/c/$tenant'
     | '/p/$tenant'
     | '/api/public/connect'
     | '/api/public/cron/dispatch-campaigns'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/_authenticated/wifiprices'
     | '/_authenticated/wifiusers'
     | '/_authenticated/withdraw'
+    | '/c/$tenant'
     | '/p/$tenant'
     | '/api/public/connect'
     | '/api/public/cron/dispatch-campaigns'
@@ -405,6 +417,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  CTenantRoute: typeof CTenantRoute
   PTenantRoute: typeof PTenantRoute
   ApiPublicConnectRoute: typeof ApiPublicConnectRoute
   ApiPublicCronDispatchCampaignsRoute: typeof ApiPublicCronDispatchCampaignsRoute
@@ -451,6 +464,13 @@ declare module '@tanstack/react-router' {
       path: '/p/$tenant'
       fullPath: '/p/$tenant'
       preLoaderRoute: typeof PTenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/c/$tenant': {
+      id: '/c/$tenant'
+      path: '/c/$tenant'
+      fullPath: '/c/$tenant'
+      preLoaderRoute: typeof CTenantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/withdraw': {
@@ -688,6 +708,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  CTenantRoute: CTenantRoute,
   PTenantRoute: PTenantRoute,
   ApiPublicConnectRoute: ApiPublicConnectRoute,
   ApiPublicCronDispatchCampaignsRoute: ApiPublicCronDispatchCampaignsRoute,
