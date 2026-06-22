@@ -88,9 +88,46 @@ function PrintCenterPage() {
             } catch (e) { notify((e as Error).message, "error"); }
           }));
 
-        // Wire the existing print button if present
+        const openPdf = () => {
+          if (!preview || !preview.codes.length) return notify("Load a batch first", "warning");
+          const tickets = preview.codes.map(c => `
+            <div class="t">
+              <div class="p">${esc(c.plan)}</div>
+              <div class="c">${esc(c.code)}</div>
+            </div>`).join("");
+          const doc = `<!doctype html><html><head><meta charset="utf-8"><title>Vouchers ${esc(preview.batch_id)}</title>
+            <style>
+              @page { size: A4; margin: 10mm; }
+              body { font-family: system-ui, sans-serif; margin: 0; }
+              .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8mm; }
+              .t { border: 1.5px dashed #94a3b8; border-radius: 8px; padding: 10mm 6mm; text-align: center; page-break-inside: avoid; }
+              .p { font-size: 11px; color: #475569; margin-bottom: 4mm; text-transform: uppercase; letter-spacing: 1px; }
+              .c { font-family: ui-monospace, monospace; font-weight: 700; font-size: 20px; letter-spacing: 3px; }
+            </style></head>
+            <body><div class="grid">${tickets}</div>
+            <script>window.onload=()=>window.print()</script>
+            </body></html>`;
+          const w = window.open("", "_blank");
+          if (!w) return notify("Allow popups to download PDF", "error");
+          w.document.write(doc); w.document.close();
+        };
+
         const printBtn = root.querySelector<HTMLButtonElement>("#pc-print-btn, [data-action=print]");
-        if (printBtn) printBtn.onclick = () => window.print();
+        if (printBtn) printBtn.onclick = openPdf;
+        const pdfBtn = root.querySelector<HTMLButtonElement>("#pc-pdf-btn, [data-action=pdf]");
+        if (pdfBtn) pdfBtn.onclick = openPdf;
+
+        // Inject PDF button into the preview header if missing
+        const headerCount = root.querySelector<HTMLElement>("#pc-preview-count");
+        if (headerCount && !root.querySelector("#pc-pdf-btn")) {
+          const b = document.createElement("button");
+          b.id = "pc-pdf-btn";
+          b.className = "btn btn-sm btn-primary";
+          b.style.marginLeft = "8px";
+          b.textContent = "Download PDF";
+          b.onclick = openPdf;
+          headerCount.parentElement?.appendChild(b);
+        }
       }}
     />
   );
