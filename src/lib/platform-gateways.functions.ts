@@ -16,8 +16,7 @@ export const listPlatformGateways = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("platform_gateways")
       .select("id,kind,provider,enabled,config,secret_encrypted,updated_at");
     if (error) throw new Error(error.message);
@@ -40,7 +39,6 @@ export const savePlatformGateway = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const update: Record<string, unknown> = {
       kind: data.kind, provider: data.provider, enabled: data.enabled,
       config: data.config, updated_by: context.userId, updated_at: new Date().toISOString(),
@@ -49,7 +47,7 @@ export const savePlatformGateway = createServerFn({ method: "POST" })
       const { encryptSecret } = await import("@/lib/crypto.server");
       update.secret_encrypted = await encryptSecret(data.secret);
     }
-    const { error } = await supabaseAdmin
+    const { error } = await context.supabase
       .from("platform_gateways")
       .upsert(update as never, { onConflict: "kind" });
     if (error) throw new Error(error.message);
