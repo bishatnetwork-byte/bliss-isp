@@ -25,13 +25,19 @@ function CustomerPortal() {
   const getPortal = useServerFn(getPortalPayload);
   const initStk = useServerFn(initiateVoucherStk);
   const checkStatus = useServerFn(checkVoucherPaymentStatus);
+  const subscribeFn = useServerFn(subscribeCustomer);
+  const listSubs = useServerFn(listMySubscriptions);
+  const cancelSub = useServerFn(cancelMySubscription);
 
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<Awaited<ReturnType<typeof getCustomerHistory>> | null>(null);
   const [plans, setPlans] = useState<Awaited<ReturnType<typeof getPortalPayload>>["plans"]>([]);
+  const [subs, setSubs] = useState<Awaited<ReturnType<typeof listMySubscriptions>>>([]);
   const [renew, setRenew] = useState<RenewState>({ state: "idle" });
   const [error, setError] = useState<string | null>(null);
+  const [subBusy, setSubBusy] = useState(false);
 
   const onLookup = async () => {
     setError(null);
