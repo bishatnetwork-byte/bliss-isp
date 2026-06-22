@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /routers
+Disallow: /plans
+Disallow: /customers
+Disallow: /vouchers
+Disallow: /invoices
+Disallow: /payments
+Disallow: /sessions
+Disallow: /users
+Disallow: /settings
