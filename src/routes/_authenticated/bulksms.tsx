@@ -70,17 +70,70 @@ function BulkSmsPage() {
           }
         });
 
-        // Templates
-        setHTML(root, "sms-templates-list",
-          (templates ?? []).map(tpl => `<div class="template-sms" data-tpl="${esc(tpl.body)}" style="cursor:pointer;padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px">
-            <div class="template-sms-title" style="font-weight:600;font-size:12px">${esc(tpl.title)}</div>
-            <div class="template-sms-body" style="font-size:11px;color:var(--muted)">${esc(tpl.body.slice(0, 80))}…</div>
-          </div>`).join("") || `<div class="empty">No templates yet</div>`);
+        // Templates list + inline editor
+        const editorHtml = `
+          <div style="border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:8px;background:var(--bg2)">
+            <input id="tpl-title" placeholder="Template title" style="width:100%;margin-bottom:4px;padding:4px 6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px"/>
+            <textarea id="tpl-body" placeholder="Message body. Use {name}, {phone}, {business}" rows="3" style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;resize:vertical"></textarea>
+            <div style="display:flex;gap:4px;margin-top:4px">
+              <button id="tpl-save" class="btn btn-sm btn-primary" style="flex:1">Save template</button>
+              <button id="tpl-clear" class="btn btn-sm btn-ghost">Clear</button>
+            </div>
+            <input id="tpl-edit-id" type="hidden"/>
+          </div>`;
+        setHTML(root, "sms-templates-list", editorHtml +
+          ((templates ?? []).map(tpl => `<div class="template-sms" data-tpl-id="${esc(tpl.id)}" data-tpl="${esc(tpl.body)}" data-tpl-title="${esc(tpl.title)}" style="cursor:pointer;padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;position:relative">
+            <div style="font-weight:600;font-size:12px">${esc(tpl.title)}</div>
+            <div style="font-size:11px;color:var(--muted)">${esc(tpl.body.slice(0, 80))}…</div>
+            <div style="position:absolute;top:6px;right:6px;display:flex;gap:4px">
+              <button data-tpl-edit="${esc(tpl.id)}" class="btn btn-xs" style="font-size:10px;padding:2px 6px">Edit</button>
+              <button data-tpl-del="${esc(tpl.id)}" class="btn btn-xs btn-ghost" style="font-size:10px;padding:2px 6px;color:var(--red)">×</button>
+            </div>
+          </div>`).join("") || `<div class="empty">No templates yet</div>`));
+
         root.querySelectorAll<HTMLElement>("[data-tpl]").forEach(el =>
-          el.addEventListener("click", () => {
+          el.addEventListener("click", (e) => {
+            if ((e.target as HTMLElement).hasAttribute("data-tpl-edit") || (e.target as HTMLElement).hasAttribute("data-tpl-del")) return;
             const ta = root.querySelector<HTMLTextAreaElement>("#sms-msg");
             if (ta) { ta.value = el.dataset.tpl!; updateSmsCount(); }
           }));
+
+        root.querySelectorAll<HTMLButtonElement>("[data-tpl-edit]").forEach(b =>
+          b.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const card = b.closest<HTMLElement>("[data-tpl-id]")!;
+            (root.querySelector<HTMLInputElement>("#tpl-title")!).value = card.dataset.tplTitle ?? "";
+            (root.querySelector<HTMLTextAreaElement>("#tpl-body")!).value = card.dataset.tpl ?? "";
+            (root.querySelector<HTMLInputElement>("#tpl-edit-id")!).value = card.dataset.tplId ?? "";
+          }));
+
+        root.querySelectorAll<HTMLButtonElement>("[data-tpl-del]").forEach(b =>
+          b.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            if (!confirm("Delete template?")) return;
+            try {
+              await delTpl({ data: { id: b.dataset.tplDel! } });
+              notify("Deleted", "success");
+              qc.invalidateQueries({ queryKey: ["sms-templates"] });
+            } catch (err) { notify((err as Error).message, "error"); }
+          }));
+
+        on(root, "tpl-save", "click", async () => {
+          const title = getVal(root, "tpl-title");
+          const body = getVal(root, "tpl-body");
+          const id = getVal(root, "tpl-edit-id");
+          if (!title || !body) return notify("Title and body required", "warning");
+          try {
+            await saveTpl({ data: { id: id || undefined, title, body } });
+            notify(id ? "Template updated" : "Template saved", "success");
+            qc.invalidateQueries({ queryKey: ["sms-templates"] });
+          } catch (err) { notify((err as Error).message, "error"); }
+        });
+        on(root, "tpl-clear", "click", () => {
+          (root.querySelector<HTMLInputElement>("#tpl-title")!).value = "";
+          (root.querySelector<HTMLTextAreaElement>("#tpl-body")!).value = "";
+          (root.querySelector<HTMLInputElement>("#tpl-edit-id")!).value = "";
+        });
 
         // Contacts table
         const renderContacts = (filter = "") => {
