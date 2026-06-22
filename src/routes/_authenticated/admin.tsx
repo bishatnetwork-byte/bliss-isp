@@ -258,9 +258,30 @@ function AdminPage() {
 
   return (
     <>
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div className="card-body" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <label className="fl" style={{ margin: 0, fontWeight: 700 }}>📂 Admin Section</label>
+          <select
+            className="fc"
+            style={{ maxWidth: 280 }}
+            value={section}
+            onChange={(e) => setSection(e.target.value as typeof section)}
+          >
+            <option value="all">All sections</option>
+            <option value="users">👥 Users</option>
+            <option value="gateways">🔌 Gateways</option>
+            <option value="fees">💰 Platform Fees</option>
+            <option value="mikrotik">📡 MikroTik Overview</option>
+          </select>
+          <span className="badge bg-blue" style={{ marginLeft: "auto" }}>
+            {section === "all" ? "Showing everything" : `Filtered: ${section}`}
+          </span>
+        </div>
+      </div>
       <MockupPage title="Admin Panel" html={html} />
       {canManage ? (
-        <div className="card" style={{ marginTop: 16 }}>
+        <div className="card" data-admin-extra="users" style={{ marginTop: 16 }}>
+
           <div className="card-hd"><span className="card-title">✉️ Invite Team Member</span></div>
           <div className="card-body">
             <div className="fg c2">
