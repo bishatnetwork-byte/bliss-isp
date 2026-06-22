@@ -44,11 +44,23 @@ function AdminPage() {
   const inviteFn = useServerFn(inviteTenantMember);
   const updateFn = useServerFn(updateTenantMember);
   const removeFn = useServerFn(removeTenantMember);
+  const overviewFn = useServerFn(getPlatformOverview);
+  const auditFn = useServerFn(listAuditLogs);
 
   const members = useQuery({
     queryKey: ["tenant-members"],
     queryFn: () => listFn(),
     staleTime: 30_000,
+  });
+  const overview = useQuery({
+    queryKey: ["platform-overview"],
+    queryFn: () => overviewFn(),
+    refetchInterval: 30_000,
+  });
+  const audit = useQuery({
+    queryKey: ["audit-logs"],
+    queryFn: () => auditFn({ data: { limit: 100 } }),
+    refetchInterval: 30_000,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["tenant-members"] });
