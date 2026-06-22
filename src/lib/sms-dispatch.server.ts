@@ -6,19 +6,27 @@
 import { decryptSecret } from "@/lib/crypto.server";
 
 type GatewayRow = { enabled: boolean; provider: string | null; config: Record<string, unknown> | null; secret_encrypted: string | null };
+type GatewayDb = {
+  from: (table: "platform_gateways" | "gateways") => {
+    select: (columns: string) => {
+      eq: (column: string, value: unknown) => unknown;
+      maybeSingle?: () => Promise<{ data: unknown }>;
+    };
+  };
+};
 
 export type DispatchResult = { status: "sent" | "failed"; provider_ref?: string; error?: string };
 
-export async function dispatchSms(_ownerId: string, to: string, body: string): Promise<DispatchResult> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+export async function dispatchSms(_ownerId: string, to: string, body: string, db?: GatewayDb): Promise<DispatchResult> {
+  const client = db ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
   // Platform-wide shared gateway first (admin-managed).
-  const { data: pg } = await supabaseAdmin
+  const { data: pg } = await client
     .from("platform_gateways").select("enabled,provider,config,secret_encrypted")
     .eq("kind", "sms").maybeSingle();
   let gw = pg as GatewayRow | null;
   if (!gw || !gw.enabled) {
     // Legacy fallback: per-tenant gateway (kept for transition).
-    const { data: tg } = await supabaseAdmin
+    const { data: tg } = await client
       .from("gateways").select("enabled,provider,config,secret_encrypted")
       .eq("owner_id", _ownerId).eq("kind", "sms").maybeSingle();
     gw = tg as GatewayRow | null;
