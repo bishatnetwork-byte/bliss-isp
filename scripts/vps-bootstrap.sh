@@ -99,10 +99,10 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 npm run build
 
 SERVER_ENTRY=""
-for candidate in ".output/server/index.mjs" "dist/server/index.mjs" ".nitro/output/server/index.mjs"; do
+for candidate in "dist/server/server.js" "dist/server/index.js" "dist/server/index.mjs" ".output/server/index.mjs" ".nitro/output/server/index.mjs"; do
   [ -f "$DEPLOY_PATH/$candidate" ] && SERVER_ENTRY="$candidate" && break
 done
-[ -n "$SERVER_ENTRY" ] || die "Could not locate Node server entry after build (looked for .output/server/index.mjs etc.)"
+[ -n "$SERVER_ENTRY" ] || die "Could not locate Node server entry after build"
 log "Server entry: $SERVER_ENTRY"
 
 # ---------------------------------------------------------------- pm2
