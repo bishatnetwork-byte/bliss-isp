@@ -14,8 +14,9 @@ export const initiateVoucherStk = createServerFn({ method: "POST" })
     plan_id: z.string().uuid(),
     phone: z.string().min(7).max(20),
     customer_name: z.string().max(120).optional().nullable(),
+    origin: z.string().url().optional(),
   }).parse(d))
-  .handler(async ({ data, request }): Promise<StkInitResult> => {
+  .handler(async ({ data }): Promise<StkInitResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: plan } = await supabaseAdmin

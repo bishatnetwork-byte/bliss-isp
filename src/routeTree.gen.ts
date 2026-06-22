@@ -34,6 +34,7 @@ import { Route as AuthenticatedBulksmsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicConnectRouteImport } from './routes/api/public/connect'
 import { Route as ApiPublicWebhooksMpesaRouteImport } from './routes/api/public/webhooks/mpesa'
+import { Route as ApiPublicWebhooksMarzpayRouteImport } from './routes/api/public/webhooks/marzpay'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -160,6 +161,12 @@ const ApiPublicWebhooksMpesaRoute = ApiPublicWebhooksMpesaRouteImport.update({
   path: '/api/public/webhooks/mpesa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksMarzpayRoute =
+  ApiPublicWebhooksMarzpayRouteImport.update({
+    id: '/api/public/webhooks/marzpay',
+    path: '/api/public/webhooks/marzpay',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRoutesByTo {
@@ -211,6 +219,7 @@ export interface FileRoutesByTo {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRoutesById {
@@ -239,6 +248,7 @@ export interface FileRoutesById {
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRouteTypes {
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   id:
     | '__root__'
@@ -320,6 +332,7 @@ export interface FileRouteTypes {
     | '/_authenticated/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   fileRoutesById: FileRoutesById
 }
@@ -330,6 +343,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PTenantRoute: typeof PTenantRoute
   ApiPublicConnectRoute: typeof ApiPublicConnectRoute
+  ApiPublicWebhooksMarzpayRoute: typeof ApiPublicWebhooksMarzpayRoute
   ApiPublicWebhooksMpesaRoute: typeof ApiPublicWebhooksMpesaRoute
 }
 
@@ -510,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksMpesaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/marzpay': {
+      id: '/api/public/webhooks/marzpay'
+      path: '/api/public/webhooks/marzpay'
+      fullPath: '/api/public/webhooks/marzpay'
+      preLoaderRoute: typeof ApiPublicWebhooksMarzpayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -565,6 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   PTenantRoute: PTenantRoute,
   ApiPublicConnectRoute: ApiPublicConnectRoute,
+  ApiPublicWebhooksMarzpayRoute: ApiPublicWebhooksMarzpayRoute,
   ApiPublicWebhooksMpesaRoute: ApiPublicWebhooksMpesaRoute,
 }
 export const routeTree = rootRouteImport
