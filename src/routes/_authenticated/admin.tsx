@@ -85,38 +85,68 @@ function AdminPage() {
   const [editing, setEditing] = useState<{ memberId: string; name: string; tabs: string[] } | null>(null);
   const [section, setSection] = useState<"all" | "users" | "gateways" | "fees" | "mikrotik">("users");
 
-  // Tag mockup cards into sections so the dropdown can filter them.
+  // Tag mockup cards + wrappers into sections so the dropdown can filter them.
   useEffect(() => {
     const root = document.querySelector("[data-mockup-page]") as HTMLElement | null;
     if (!root) return;
-    const map: Record<string, string> = {
-      "platform users": "users",
-      "email gateway": "gateways",
-      "domain provider": "gateways",
-      "chr mikrotik": "mikrotik",
-      "remote access": "mikrotik",
-      "winbox": "mikrotik",
-      "platform fee rates": "fees",
-      "withdraw platform fees": "fees",
-      "fee withdrawal history": "fees",
-      "fee breakdown log": "fees",
-      "billing system wallet": "fees",
-      "voucher prefix": "fees",
+    const titleMap: { key: string; tag: string }[] = [
+      { key: "platform users", tag: "users" },
+      { key: "email gateway", tag: "gateways" },
+      { key: "domain provider", tag: "gateways" },
+      { key: "platform gateways", tag: "gateways" },
+      { key: "chr mikrotik", tag: "mikrotik" },
+      { key: "remote access", tag: "mikrotik" },
+      { key: "winbox", tag: "mikrotik" },
+      { key: "platform fee rates", tag: "fees" },
+      { key: "withdraw platform fees", tag: "fees" },
+      { key: "fee withdrawal history", tag: "fees" },
+      { key: "fee breakdown log", tag: "fees" },
+      { key: "billing system wallet", tag: "fees" },
+      { key: "voucher prefix", tag: "fees" },
+    ];
+    const tagFor = (el: HTMLElement): string => {
+      const titles = Array.from(el.querySelectorAll(".card-title"))
+        .map((t) => (t.textContent ?? "").toLowerCase());
+      const tags = new Set<string>();
+      for (const t of titles) {
+        for (const m of titleMap) if (t.includes(m.key)) { tags.add(m.tag); break; }
+      }
+      if (tags.size === 1) return [...tags][0];
+      if (tags.size > 1) return "mixed";
+      return "fees"; // default bucket for untitled blocks (wallet header, alerts, sep)
     };
-    const cards = root.querySelectorAll<HTMLElement>(".card");
-    cards.forEach((c) => {
-      const title = (c.querySelector(".card-title")?.textContent ?? "").toLowerCase();
-      let tag = "fees";
-      for (const k in map) if (title.includes(k)) { tag = map[k]; break; }
-      c.setAttribute("data-admin-section", tag);
+
+    // Tag every direct child of the mockup root.
+    Array.from(root.children).forEach((child) => {
+      const el = child as HTMLElement;
+      const tag = tagFor(el);
+      if (tag === "mixed") {
+        // Descend into columns of mixed .g2 grids.
+        Array.from(el.children).forEach((col) => {
+          const c = col as HTMLElement;
+          c.setAttribute("data-admin-section", tagFor(c));
+        });
+        el.setAttribute("data-admin-mixed", "1");
+      } else {
+        el.setAttribute("data-admin-section", tag);
+      }
     });
+
+    // Special-case ids/classes.
     const feeStats = document.getElementById("ad-fee-stats");
     if (feeStats) feeStats.setAttribute("data-admin-section", "fees");
+    const wallet = root.querySelector<HTMLElement>(".platform-wallet-card");
+    if (wallet) wallet.setAttribute("data-admin-section", "fees");
+    // Integrations heading + intro alert belong to gateways.
+    root.querySelectorAll<HTMLElement>(".alert.ai").forEach((a) => {
+      if (a.textContent?.toLowerCase().includes("marzpay") || a.textContent?.toLowerCase().includes("platform-wide")) {
+        a.setAttribute("data-admin-section", "gateways");
+      }
+    });
   }, []);
 
   // Apply section filter
   useEffect(() => {
-    const root = document.querySelector("[data-mockup-page]") as HTMLElement | null;
     document.querySelectorAll<HTMLElement>("[data-admin-section]").forEach((el) => {
       el.style.display = section === "all" || el.getAttribute("data-admin-section") === section ? "" : "none";
     });
@@ -124,7 +154,13 @@ function AdminPage() {
       const tag = el.getAttribute("data-admin-extra")!;
       el.style.display = section === "all" || tag === section ? "" : "none";
     });
-    void root;
+    // Hide mixed wrappers whose columns are all hidden.
+    document.querySelectorAll<HTMLElement>("[data-admin-mixed]").forEach((el) => {
+      const anyVisible = Array.from(el.children).some(
+        (c) => (c as HTMLElement).style.display !== "none",
+      );
+      el.style.display = anyVisible ? "" : "none";
+    });
   }, [section, members.data, overview.data]);
 
   const canManage =
