@@ -649,6 +649,27 @@ export type Database = {
         }
         Relationships: []
       }
+      security_settings: {
+        Row: {
+          owner_id: string
+          passcode_enabled: boolean
+          passcode_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          owner_id: string
+          passcode_enabled?: boolean
+          passcode_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          owner_id?: string
+          passcode_enabled?: boolean
+          passcode_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           key: string
@@ -872,6 +893,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_memberships: {
+        Row: {
+          allowed_tabs: Json
+          created_at: string
+          id: string
+          member_id: string
+          role: string
+          tenant_owner_id: string
+        }
+        Insert: {
+          allowed_tabs?: Json
+          created_at?: string
+          id?: string
+          member_id: string
+          role?: string
+          tenant_owner_id: string
+        }
+        Update: {
+          allowed_tabs?: Json
+          created_at?: string
+          id?: string
+          member_id?: string
+          role?: string
+          tenant_owner_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1086,44 +1134,56 @@ export type Database = {
       withdrawals: {
         Row: {
           amount: number
+          completed_at: string | null
           created_at: string
           destination: string
+          failure_reason: string | null
           fee: number
           id: string
+          idempotency_key: string | null
           method: string
           net: number
           notes: string | null
           owner_id: string
           reference: string | null
           status: string
+          type: string
           updated_at: string
         }
         Insert: {
           amount: number
+          completed_at?: string | null
           created_at?: string
           destination: string
+          failure_reason?: string | null
           fee?: number
           id?: string
+          idempotency_key?: string | null
           method?: string
           net: number
           notes?: string | null
           owner_id: string
           reference?: string | null
           status?: string
+          type?: string
           updated_at?: string
         }
         Update: {
           amount?: number
+          completed_at?: string | null
           created_at?: string
           destination?: string
+          failure_reason?: string | null
           fee?: number
           id?: string
+          idempotency_key?: string | null
           method?: string
           net?: number
           notes?: string | null
           owner_id?: string
           reference?: string | null
           status?: string
+          type?: string
           updated_at?: string
         }
         Relationships: []
@@ -1133,6 +1193,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      effective_owner_for: { Args: { _uid: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1140,8 +1201,75 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_tenant_access: {
+        Args: { _owner: string; _uid: string }
+        Returns: boolean
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      rpc_complete_voucher_payment: {
+        Args: { _payment_id: string; _provider_ref?: string }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          customer_id: string | null
+          id: string
+          invoice_id: string | null
+          method: string
+          raw_payload: Json | null
+          reference: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rpc_refund_sms_credits: { Args: { _n: number }; Returns: number }
+      rpc_request_withdrawal: {
+        Args: {
+          _amount: number
+          _idempotency_key: string
+          _method: string
+          _passcode: string
+          _phone: string
+          _type?: string
+        }
+        Returns: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          destination: string
+          failure_reason: string | null
+          fee: number
+          id: string
+          idempotency_key: string | null
+          method: string
+          net: number
+          notes: string | null
+          owner_id: string
+          reference: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "withdrawals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rpc_reserve_sms_credits: { Args: { _n: number }; Returns: number }
+      rpc_set_withdraw_passcode: {
+        Args: { _passcode: string }
+        Returns: undefined
+      }
+      rpc_transfer_wallet_to_sms: { Args: { _amount: number }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "operator" | "viewer"
