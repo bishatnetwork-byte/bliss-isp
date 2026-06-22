@@ -16,7 +16,7 @@ export const sendTestSms = createServerFn({ method: "POST" })
       .rpc("is_staff", { _user_id: context.userId });
     if (!isStaff) throw new Error("forbidden");
     const { dispatchSms } = await import("@/lib/sms-dispatch.server");
-    const res = await dispatchSms(context.userId, data.phone, data.body);
+    const res = await dispatchSms(context.userId, data.phone, data.body, context.supabase as never);
     return { status: res.status, provider_ref: res.provider_ref ?? null, error: res.error ?? null };
   });
 
@@ -41,6 +41,7 @@ export const sendTestStk = createServerFn({ method: "POST" })
       reference,
       description: "HotspotPro test STK push",
       callbackUrl: `${origin}/api/public/webhooks/marzpay`,
+      db: context.supabase as never,
     });
     if (res.ok) return { reference, ok: true as const, provider_ref: res.provider_ref, raw: JSON.stringify(res.raw).slice(0, 500) };
     return { reference, ok: false as const, error: res.error, raw: res.raw ? JSON.stringify(res.raw).slice(0, 500) : null };
