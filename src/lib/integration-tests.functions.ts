@@ -31,7 +31,7 @@ export const sendTestStk = createServerFn({ method: "POST" })
       .rpc("is_staff", { _user_id: context.userId });
     if (!isStaff) throw new Error("forbidden");
     const { initiateMarzpayStk } = await import("@/lib/marzpay.server");
-    const req = getWebRequest();
+    const req = getRequest();
     const origin = req ? new URL(req.url).origin : "https://bliss-isp.lovable.app";
     const reference = `TEST-${Date.now()}`;
     const res = await initiateMarzpayStk({
