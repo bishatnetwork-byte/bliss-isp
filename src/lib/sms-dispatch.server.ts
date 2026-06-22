@@ -9,15 +9,21 @@ type GatewayRow = { enabled: boolean; provider: string | null; config: Record<st
 
 export type DispatchResult = { status: "sent" | "failed"; provider_ref?: string; error?: string };
 
-export async function dispatchSms(ownerId: string, to: string, body: string): Promise<DispatchResult> {
+export async function dispatchSms(_ownerId: string, to: string, body: string): Promise<DispatchResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
-    .from("gateways").select("enabled,provider,config,secret_encrypted")
-    .eq("owner_id", ownerId).eq("kind", "sms").maybeSingle();
-  const gw = data as GatewayRow | null;
+  // Platform-wide shared gateway first (admin-managed).
+  const { data: pg } = await supabaseAdmin
+    .from("platform_gateways").select("enabled,provider,config,secret_encrypted")
+    .eq("kind", "sms").maybeSingle();
+  let gw = pg as GatewayRow | null;
   if (!gw || !gw.enabled) {
-    // Dev fallback — count as delivered so the reserve/refund flow stays sane
-    // until the operator wires a real gateway.
+    // Legacy fallback: per-tenant gateway (kept for transition).
+    const { data: tg } = await supabaseAdmin
+      .from("gateways").select("enabled,provider,config,secret_encrypted")
+      .eq("owner_id", _ownerId).eq("kind", "sms").maybeSingle();
+    gw = tg as GatewayRow | null;
+  }
+  if (!gw || !gw.enabled) {
     return { status: "sent", provider_ref: "noop" };
   }
   try {

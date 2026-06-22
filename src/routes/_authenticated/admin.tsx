@@ -11,6 +11,11 @@ import {
   removeTenantMember,
 } from "@/lib/memberships.functions";
 import { getPlatformOverview, listAuditLogs } from "@/lib/platform.functions";
+import {
+  listPlatformGateways,
+  savePlatformGateway,
+  getPlatformSmsRevenue,
+} from "@/lib/platform-gateways.functions";
 import { useAccess } from "@/hooks/useAccess";
 
 const setText = (id: string, v: string | number) => {
@@ -273,6 +278,8 @@ function AdminPage() {
           saving={update.isPending}
         />
       ) : null}
+      {access?.isPlatformAdmin ? <PlatformGatewaysCard /> : null}
+      {access?.isPlatformAdmin ? <PlatformSmsRevenueCard /> : null}
       <div className="card" style={{ marginTop: 16 }}>
         <div className="card-hd">
           <span className="card-title">📜 Activity Log</span>
@@ -380,5 +387,191 @@ function AllowedTabsModal({
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!),
+  );
+}
+
+type PGForm = { provider: string; enabled: boolean; config: Record<string, string>; secret: string };
+
+function PlatformGatewaysCard() {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listPlatformGateways);
+  const saveFn = useServerFn(savePlatformGateway);
+  const list = useQuery({ queryKey: ["platform-gateways"], queryFn: () => listFn() });
+  const save = useMutation({
+    mutationFn: saveFn,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["platform-gateways"] }),
+  });
+
+  const findGw = (kind: "payment" | "sms") => list.data?.find((g) => g.kind === kind);
+  const pay = findGw("payment");
+  const sms = findGw("sms");
+
+  const [payForm, setPayForm] = useState<PGForm>({
+    provider: "marzpay", enabled: false, config: { business_id: "", username: "", base_url: "" }, secret: "",
+  });
+  const [smsForm, setSmsForm] = useState<PGForm>({
+    provider: "wizasms", enabled: false, config: { username: "", sender_id: "WIFIZONE", base_url: "" }, secret: "",
+  });
+
+  useEffect(() => {
+    if (pay) setPayForm((f) => ({
+      ...f, provider: pay.provider || "marzpay", enabled: pay.enabled,
+      config: { ...f.config, ...(pay.config as Record<string, string> ?? {}) },
+    }));
+  }, [pay]);
+  useEffect(() => {
+    if (sms) setSmsForm((f) => ({
+      ...f, provider: sms.provider || "wizasms", enabled: sms.enabled,
+      config: { ...f.config, ...(sms.config as Record<string, string> ?? {}) },
+    }));
+  }, [sms]);
+
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <div className="card-hd">
+        <span className="card-title">🔌 Platform Gateways (shared by all tenants)</span>
+        <span className="badge bg-purple">Platform Admin</span>
+      </div>
+      <div className="card-body">
+        <div className="alert ai" style={{ marginBottom: 12 }}>
+          <span className="al-ico">ℹ️</span>
+          These credentials are used by every tenant in the platform. Per-tenant gateway settings
+          (under Settings → Gateways) are ignored when the matching platform gateway is enabled.
+        </div>
+        <div className="g2" style={{ alignItems: "start" }}>
+          <GwForm
+            title="💳 Payment (MarsPay)"
+            form={payForm}
+            setForm={setPayForm}
+            hasSecret={!!pay?.has_secret}
+            saving={save.isPending}
+            fields={[
+              { key: "business_id", label: "Business ID" },
+              { key: "username", label: "Username" },
+              { key: "base_url", label: "Base URL (optional)", placeholder: "https://wallet.marzpay.com/api/v1" },
+            ]}
+            secretLabel="API Key"
+            onSave={() => save.mutate({ data: { kind: "payment", provider: payForm.provider, enabled: payForm.enabled, config: payForm.config, secret: payForm.secret || undefined } })}
+          />
+          <GwForm
+            title="📨 SMS (WizaSMS)"
+            form={smsForm}
+            setForm={setSmsForm}
+            hasSecret={!!sms?.has_secret}
+            saving={save.isPending}
+            fields={[
+              { key: "username", label: "WizaSMS Username" },
+              { key: "sender_id", label: "Sender ID", placeholder: "WIFIZONE" },
+              { key: "base_url", label: "Base URL (optional)", placeholder: "https://wizasms.ug/API/V1" },
+            ]}
+            secretLabel="API Password"
+            onSave={() => save.mutate({ data: { kind: "sms", provider: smsForm.provider, enabled: smsForm.enabled, config: smsForm.config, secret: smsForm.secret || undefined } })}
+          />
+        </div>
+        {save.isError ? <div className="alert ar" style={{ marginTop: 10 }}>{(save.error as Error).message}</div> : null}
+        {save.isSuccess ? <div className="alert ag" style={{ marginTop: 10 }}>Saved.</div> : null}
+      </div>
+    </div>
+  );
+}
+
+function GwForm({
+  title, form, setForm, hasSecret, saving, fields, secretLabel, onSave,
+}: {
+  title: string;
+  form: PGForm;
+  setForm: (f: PGForm) => void;
+  hasSecret: boolean;
+  saving: boolean;
+  fields: { key: string; label: string; placeholder?: string }[];
+  secretLabel: string;
+  onSave: () => void;
+}) {
+  return (
+    <div className="card" style={{ marginBottom: 0 }}>
+      <div className="card-hd"><span className="card-title">{title}</span>
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+          <input type="checkbox" checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} />
+          Enabled
+        </label>
+      </div>
+      <div className="card-body">
+        {fields.map((f) => (
+          <div className="form-group" key={f.key}>
+            <label className="fl">{f.label}</label>
+            <input
+              className="fc"
+              value={form.config[f.key] ?? ""}
+              placeholder={f.placeholder}
+              onChange={(e) => setForm({ ...form, config: { ...form.config, [f.key]: e.target.value } })}
+            />
+          </div>
+        ))}
+        <div className="form-group">
+          <label className="fl">{secretLabel} {hasSecret ? <span className="badge bg-green" style={{ marginLeft: 6 }}>set</span> : null}</label>
+          <input
+            className="fc"
+            type="password"
+            placeholder={hasSecret ? "•••••••• (leave blank to keep)" : "Paste secret"}
+            value={form.secret}
+            onChange={(e) => setForm({ ...form, secret: e.target.value })}
+          />
+        </div>
+        <button className="btn btn-p" disabled={saving} onClick={onSave}>{saving ? "Saving…" : "Save"}</button>
+      </div>
+    </div>
+  );
+}
+
+function PlatformSmsRevenueCard() {
+  const fn = useServerFn(getPlatformSmsRevenue);
+  const q = useQuery({ queryKey: ["platform-sms-revenue"], queryFn: () => fn(), refetchInterval: 60_000 });
+  const cur = (n: number) => `UGX ${Math.round(n).toLocaleString()}`;
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <div className="card-hd">
+        <span className="card-title">💬 SMS Revenue (all tenants)</span>
+        <span className="badge bg-purple">Platform Admin</span>
+      </div>
+      <div className="card-body">
+        <div className="g2" style={{ gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+          <Stat label="Total Collected" value={cur(q.data?.totals.amount ?? 0)} color="var(--green)" />
+          <Stat label="Credits Sold" value={(q.data?.totals.credits ?? 0).toLocaleString()} color="var(--blue)" />
+          <Stat label="Transactions" value={(q.data?.totals.count ?? 0).toLocaleString()} color="var(--purple)" />
+        </div>
+        <div className="tbl-wrap" style={{ marginTop: 12, maxHeight: 280, overflowY: "auto" }}>
+          <table>
+            <thead><tr><th>Date</th><th>Tenant</th><th>Amount</th><th>Credits</th></tr></thead>
+            <tbody>
+              {q.isLoading ? (
+                <tr><td colSpan={4} style={{ textAlign: "center", padding: 14, color: "var(--t3)" }}>Loading…</td></tr>
+              ) : (q.data?.rows.length ?? 0) === 0 ? (
+                <tr><td colSpan={4} style={{ textAlign: "center", padding: 14, color: "var(--t3)" }}>No SMS purchases yet</td></tr>
+              ) : (
+                q.data!.rows.map((r, i) => (
+                  <tr key={i}>
+                    <td style={{ fontSize: 11, color: "var(--t3)" }}>{new Date(r.created_at as string).toLocaleString()}</td>
+                    <td className="mono" style={{ fontSize: 11 }}>{(r.owner_id as string).slice(0, 8)}</td>
+                    <td><b>{cur(Number(r.amount))}</b></td>
+                    <td>{Number(r.credits).toLocaleString()}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="card" style={{ marginBottom: 0 }}>
+      <div className="card-body" style={{ padding: 14 }}>
+        <div style={{ fontSize: 11, color: "var(--t3)", textTransform: "uppercase", letterSpacing: ".06em", fontWeight: 700 }}>{label}</div>
+        <div style={{ fontSize: 22, fontWeight: 800, color, marginTop: 4 }}>{value}</div>
+      </div>
+    </div>
   );
 }

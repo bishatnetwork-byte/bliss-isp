@@ -13,20 +13,16 @@ export function useAccess() {
   });
 }
 
-const VIEWER_HIDDEN = new Set(["/withdraw", "/admin", "/smscredit", "/bulksms", "/sell"]);
-const STAFF_HIDDEN = new Set(["/admin", "/withdraw"]);
-
 /** Returns whether a sidebar route should be visible for the given access. */
 export function canSeeRoute(access: Access | undefined, to: string): boolean {
   if (!access) return true;
-  const { tenantRole, isPlatformAdmin, allowedTabs } = access;
-  if (isPlatformAdmin || tenantRole === "owner") return true;
+  const { isPlatformAdmin, allowedTabs } = access;
+  // Admin Panel is platform-admin only.
+  if (to === "/admin") return !!isPlatformAdmin;
+  // Per-user tab allowlist (set by admin) takes precedence.
   if (allowedTabs && allowedTabs.length > 0) {
-    // explicit allowlist (route path without leading slash)
     return allowedTabs.includes(to.replace(/^\//, ""));
   }
-  if (tenantRole === "admin") return to !== "/admin" || isPlatformAdmin;
-  if (tenantRole === "staff") return !STAFF_HIDDEN.has(to);
-  if (tenantRole === "viewer") return !VIEWER_HIDDEN.has(to);
+  // Default: every signed-in user sees every non-admin tab.
   return true;
 }
