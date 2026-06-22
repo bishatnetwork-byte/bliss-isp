@@ -1,107 +1,67 @@
+// Ported from reference hotspot-backend/src/routes/withdrawals.js
+// Atomicity + idempotency + recorded-failure pattern moved into the
+// rpc_request_withdrawal Postgres function — see migration. This file is a thin
+// authenticated RPC caller so the race-safety and passcode check live in ONE place
+// (the DB) regardless of how many clients call concurrently.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const listWithdrawals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("withdrawals").select("*").order("created_at", { ascending: false }).limit(200);
+  .inputValidator((d: unknown) =>
+    z.object({
+      type: z.enum(["all", "wallet", "platform_fee"]).default("all"),
+      status: z.enum(["all", "pending", "completed", "failed"]).default("all"),
+    }).partial().parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    let q = context.supabase.from("withdrawals").select("*")
+      .order("created_at", { ascending: false }).limit(200);
+    if (data.type && data.type !== "all") q = q.eq("type", data.type);
+    if (data.status && data.status !== "all") q = q.eq("status", data.status);
+    const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return rows ?? [];
   });
 
 export const requestWithdrawal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     amount: z.number().positive(),
-    method: z.enum(["mpesa", "airtel", "bank", "manual"]).default("mpesa"),
-    destination: z.string().min(3).max(120),
-    notes: z.string().max(500).optional().nullable(),
+    phone: z.string().min(3).max(40),
+    method: z.string().min(2).max(40).default("Mobile Money"),
+    passcode: z.string().min(4).max(40),
+    idempotencyKey: z.string().min(8).max(80),
+    type: z.enum(["wallet", "platform_fee"]).default("wallet"),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: wallet } = await context.supabase
-      .from("wallet").select("balance").eq("owner_id", context.userId).maybeSingle();
-    const balance = Number(wallet?.balance ?? 0);
-
-    const { data: fees } = await context.supabase
-      .from("fee_settings").select("withdraw_fee_pct,withdraw_fee_flat,min_withdraw").eq("id", true).maybeSingle();
-    const pct = Number(fees?.withdraw_fee_pct ?? 0) / 100;
-    const flat = Number(fees?.withdraw_fee_flat ?? 0);
-    const minW = Number(fees?.min_withdraw ?? 0);
-
-    if (data.amount < minW) throw new Error(`Minimum withdrawal is ${minW}`);
-    if (data.amount > balance) throw new Error("Insufficient wallet balance");
-
-    const fee = data.amount * pct + flat;
-    const net = data.amount - fee;
-
-    // Reserve funds immediately
-    await context.supabase.from("wallet").update({ balance: balance - data.amount }).eq("owner_id", context.userId);
-
-    const { data: ins, error } = await context.supabase.from("withdrawals").insert({
-      owner_id: context.userId, amount: data.amount, fee, net,
-      method: data.method, destination: data.destination, status: "pending", notes: data.notes ?? null,
-    }).select("id").single();
-    if (error) throw new Error(error.message);
-
-    return { id: ins!.id, fee, net };
-  });
-
-export const updateWithdrawalStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    id: z.string().uuid(),
-    status: z.enum(["pending", "processing", "completed", "failed"]),
-    reference: z.string().max(120).optional().nullable(),
-  }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Forbidden");
-
-    const { data: w } = await context.supabase.from("withdrawals").select("owner_id,amount,status").eq("id", data.id).single();
-    const { error } = await context.supabase.from("withdrawals").update({
-      status: data.status, reference: data.reference ?? null,
-    }).eq("id", data.id);
-    if (error) throw new Error(error.message);
-
-    // Refund on failure
-    if (data.status === "failed" && w && w.status !== "failed") {
-      const { data: wallet } = await context.supabase.from("wallet").select("balance").eq("owner_id", w.owner_id).maybeSingle();
-      if (wallet) {
-        await context.supabase.from("wallet").update({
-          balance: Number(wallet.balance) + Number(w.amount),
-        }).eq("owner_id", w.owner_id);
-      }
-    }
-    return { ok: true };
-  });
-
-// ---- Fee withdrawals (admin) ----
-export const listFeeWithdrawals = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Forbidden");
-    const { data, error } = await context.supabase
-      .from("fee_withdrawals").select("*").order("created_at", { ascending: false }).limit(200);
-    if (error) throw new Error(error.message);
-    return data ?? [];
-  });
-
-export const doFeeWithdraw = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    amount: z.number().positive(),
-    method: z.enum(["mpesa", "airtel", "bank"]).default("mpesa"),
-    destination: z.string().min(3).max(120),
-  }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Forbidden");
-    const { error } = await context.supabase.from("fee_withdrawals").insert({
-      admin_id: context.userId, amount: data.amount, method: data.method, destination: data.destination, status: "pending",
+    const { data: row, error } = await context.supabase.rpc("rpc_request_withdrawal", {
+      _amount: data.amount,
+      _phone: data.phone,
+      _method: data.method,
+      _passcode: data.passcode,
+      _idempotency_key: data.idempotencyKey,
+      _type: data.type,
     });
     if (error) throw new Error(error.message);
+    return row;
+  });
+
+export const setWithdrawPasscode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ passcode: z.string().min(4).max(40) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("rpc_set_withdraw_passcode", { _passcode: data.passcode });
+    if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const getSecuritySettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("security_settings").select("passcode_enabled,updated_at").maybeSingle();
+    if (error) throw new Error(error.message);
+    return data ?? { passcode_enabled: false, updated_at: null };
   });
