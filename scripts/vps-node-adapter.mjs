@@ -5,13 +5,31 @@
 // Run: node scripts/vps-node-adapter.mjs   (PORT defaults to 3001)
 
 import { createServer } from "node:http";
-import { createReadStream } from "node:fs";
+import { createReadStream, readFileSync, existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { resolve, dirname, extname } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Load .env from project root BEFORE importing the server bundle.
+// PM2's `env_file` option is not real — without this, SUPABASE_URL etc. are undefined.
+const ENV_PATH = resolve(__dirname, "..", ".env");
+if (existsSync(ENV_PATH)) {
+  const raw = readFileSync(ENV_PATH, "utf8");
+  for (const line of raw.split("\n")) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$/i);
+    if (!m) continue;
+    let val = m[2];
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
+    }
+    if (process.env[m[1]] === undefined) process.env[m[1]] = val;
+  }
+  console.log(`[adapter] loaded env from ${ENV_PATH}`);
+}
+
 const ENTRY = resolve(__dirname, "..", "dist", "server", "server.js");
 
 const mod = await import(ENTRY);
