@@ -44,14 +44,38 @@ function CustomerPortal() {
     if (phone.replace(/\D/g, "").length < 7) { setError("Enter a valid phone number"); return; }
     setLoading(true);
     try {
-      const [h, p] = await Promise.all([
+      const [h, p, s] = await Promise.all([
         getHistory({ data: { owner: tenant, phone } }),
         getPortal({ data: { owner: tenant } }),
+        listSubs({ data: { owner: tenant, phone } }),
       ]);
       setHistory(h);
       setPlans(p.plans);
+      setSubs(s);
     } catch (e) { setError((e as Error).message); }
     finally { setLoading(false); }
+  };
+
+  const onSubscribe = async (planId: string) => {
+    setSubBusy(true);
+    try {
+      await subscribeFn({ data: {
+        owner: tenant, phone, plan_id: planId,
+        name: history?.vouchers[0]?.plan_name ? null : null,
+        email: email || null,
+      } });
+      const fresh = await listSubs({ data: { owner: tenant, phone } });
+      setSubs(fresh);
+    } catch (e) { setError((e as Error).message); }
+    finally { setSubBusy(false); }
+  };
+
+  const onCancelSub = async (id: string) => {
+    try {
+      await cancelSub({ data: { owner: tenant, phone, id } });
+      const fresh = await listSubs({ data: { owner: tenant, phone } });
+      setSubs(fresh);
+    } catch (e) { setError((e as Error).message); }
   };
 
   const onRenew = async (planId: string) => {
