@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getPortalPayload } from "@/lib/portal.functions";
 import { getCustomerHistory } from "@/lib/customer-portal.functions";
 import { initiateVoucherStk, checkVoucherPaymentStatus } from "@/lib/payments.functions";
+import { subscribeCustomer, listMySubscriptions, cancelMySubscription } from "@/lib/subscriptions.functions";
 
 export const Route = createFileRoute("/c/$tenant")({
   head: () => ({
