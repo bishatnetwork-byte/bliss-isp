@@ -192,36 +192,30 @@ function BulkSmsPage() {
             <td>${m.parts}</td><td><span class="badge ${m.status === "sent" ? "bg-green" : "bg-red"}">${esc(m.status)}</span></td>
           </tr>`).join("") || `<tr><td colspan="5"><div class="empty">No messages yet</div></td></tr>`);
 
-        // Send
+        // Send (handles both single and bulk based on active tab)
         on(root, "sms-send-btn", "click", async () => {
           const body = getVal(root, "sms-msg");
           if (!body) return notify("Enter a message", "warning");
-          if (bulkChips.length === 0) return notify("Add at least one recipient", "warning");
-          const recipients = bulkChips.map(phone => {
-            const ct = contacts?.find(c => c.phone === phone);
-            return { phone, name: ct?.name ?? "Customer" };
-          });
+          let recipients: { phone: string; name: string | null }[] = [];
+          if (mode === "single") {
+            const phone = getVal(root, "sms-s-phone");
+            const name = getVal(root, "sms-s-name");
+            if (!phone) return notify("Recipient phone required", "warning");
+            recipients = [{ phone, name: name || null }];
+          } else {
+            if (bulkChips.length === 0) return notify("Add at least one recipient", "warning");
+            recipients = bulkChips.map(phone => {
+              const ct = contacts?.find(c => c.phone === phone);
+              return { phone, name: ct?.name ?? null };
+            });
+          }
           try {
             const r = await sendFn({ data: { recipients, body } });
             notify(`Sent ${r.sent} SMS — ${r.smsCreditsRemaining} credits left`, "success");
-            bulkChips.length = 0;
+            if (mode === "bulk") bulkChips.length = 0;
             qc.invalidateQueries({ queryKey: ["wallet"] });
             qc.invalidateQueries({ queryKey: ["sms-history"] });
             qc.invalidateQueries({ queryKey: ["contacts"] });
-          } catch (e) { notify((e as Error).message, "error"); }
-        });
-
-        // Single SMS
-        on(root, "sms-s-send-btn", "click", async () => {
-          const phone = getVal(root, "sms-s-phone");
-          const name = getVal(root, "sms-s-name");
-          const body = getVal(root, "sms-msg");
-          if (!phone || !body) return notify("Phone & message required", "warning");
-          try {
-            const r = await sendFn({ data: { recipients: [{ phone, name }], body } });
-            notify(`Sent — ${r.smsCreditsRemaining} credits left`, "success");
-            qc.invalidateQueries({ queryKey: ["wallet"] });
-            qc.invalidateQueries({ queryKey: ["sms-history"] });
           } catch (e) { notify((e as Error).message, "error"); }
         });
 
@@ -236,6 +230,8 @@ function BulkSmsPage() {
             notify("Contact added", "success");
           } catch (e) { notify((e as Error).message, "error"); }
         });
+
+        setMode("single");
 
         // Scheduled campaigns panel — appended after the history table
         const historyHost = root.querySelector<HTMLElement>("#sms-history-tbody")?.closest("section, .card, div");
