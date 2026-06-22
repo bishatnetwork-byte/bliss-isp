@@ -1,0 +1,75 @@
+<div class="g2" style="align-items:start">
+    <div>
+      <div class="card">
+        <div class="card-hd">
+          <span class="card-title">📨 Compose SMS</span>
+          <div class="tab-bar" style="margin-bottom:0">
+            <button class="tab act" data-st="single" onclick="selSmsTab(this)">Single</button>
+            <button class="tab" data-st="bulk" onclick="selSmsTab(this)">Bulk</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="sms-single-panel">
+            <div class="form-group"><label class="fl frq">Recipient Phone</label><input class="fc" id="sms-s-phone" placeholder="+256 7XX XXX XXX" type="tel"/></div>
+            <div class="form-group"><label class="fl">Recipient Name (optional)</label><input class="fc" id="sms-s-name" placeholder="John Mukasa"/></div>
+          </div>
+          <div id="sms-bulk-panel" style="display:none">
+            <div class="form-group"><label class="fl">Recipients</label>
+              <div style="background:var(--bg0);border:1px solid var(--border);border-radius:7px;padding:8px;min-height:60px;cursor:text" id="sms-chips" onclick="document.getElementById('sms-chip-input').focus()">
+                <span id="chips-wrap"></span>
+                <input id="sms-chip-input" style="background:none;border:none;outline:none;color:var(--t1);font-size:12px;min-width:150px" placeholder="Type number + Enter" onkeydown="chipKeydown(event)"/>
+              </div>
+              <div class="fhint">Press Enter or comma after each number. Or pick from contacts below.</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+              <button class="btn btn-s btn-sm" onclick="loadContacts('all')">👥 All Contacts</button>
+              <button class="btn btn-s btn-sm" onclick="loadContacts('active')">🟢 Active Vouchers</button>
+              <button class="btn btn-s btn-sm" onclick="loadContacts('expired')">🔴 Expired</button>
+              <button class="btn btn-s btn-sm" onclick="loadContacts('unactivated')" title="Paid for a voucher but haven't connected a device yet">🎫 Unused Vouchers (<span id="bsms-unactivated-count">0</span>)</button>
+              <button class="btn btn-s btn-sm" onclick="loadTopBuyers()">🏆 Top Buyers</button>
+            </div>
+          </div>
+          <div class="form-group"><label class="fl frq">Message</label>
+            <textarea class="fc" id="sms-msg" rows="4" placeholder="Type your message here..." oninput="updateSmsCount()"></textarea>
+            <div style="display:flex;justify-content:space-between;margin-top:4px">
+              <span class="fhint">Variables: {name} {code} {plan} {expires} {business}</span>
+              <span style="font-size:10px;color:var(--t3)" id="sms-char-count">0/160</span>
+            </div>
+          </div>
+          <div class="form-group"><label class="fl">Quick Templates</label>
+            <div id="sms-templates-list"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--t3)">Credits: <span style="color:var(--green);font-weight:700" id="sms-cr-avail">0</span> · Cost: <span style="color:var(--yellow);font-weight:700" id="sms-send-cost">0</span></div>
+            <button class="btn btn-p" id="sms-send-btn" onclick="sendSMSNow()">📤 Send SMS</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-hd">
+          <span class="card-title">👥 Contacts</span>
+          <div style="display:flex;gap:6px">
+            <input class="fc" id="contact-search" placeholder="Search..." style="width:140px;font-size:11px;padding:5px 8px" oninput="renderContacts()"/>
+            <button class="btn btn-s btn-sm" onclick="showAddContactModal()">＋ Add</button>
+          </div>
+        </div>
+        <div style="max-height:350px;overflow-y:auto">
+          <table>
+            <thead><tr><th><input type="checkbox" onchange="selAllContacts(this)"/></th><th>Name</th><th>Phone</th><th>Source</th><th></th></tr></thead>
+            <tbody id="contacts-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">📋 SMS History</span></div>
+        <div style="max-height:280px;overflow-y:auto">
+          <table>
+            <thead><tr><th>Date</th><th>To</th><th>Message</th><th>Status</th></tr></thead>
+            <tbody id="sms-history-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>

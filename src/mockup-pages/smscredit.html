@@ -1,0 +1,62 @@
+<div class="g2" style="align-items:start">
+    <div>
+      <div class="wallet-card">
+        <div class="wallet-lbl">SMS Credit Balance</div>
+        <div class="wallet-bal" id="sms-balance">0</div>
+        <div class="wallet-sub">credits available · ~UGX <span id="sms-cost-display">65</span>/SMS</div>
+        <div style="position:absolute;right:22px;top:50%;transform:translateY(-50%);font-size:40px;opacity:.15">📱</div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">💰 Add Credits</span></div>
+        <div class="card-body">
+          <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Choose Top-Up Method</div>
+          <div class="credit-method">
+            <div class="credit-opt sel" data-cm="momo" onclick="selCreditMethod(this)"><span class="credit-icon">📱</span>Mobile Money</div>
+            <div class="credit-opt" data-cm="wallet" onclick="selCreditMethod(this)"><span class="credit-icon">💳</span>Main Wallet</div>
+          </div>
+          <div id="credit-momo-fields">
+            <div class="alert ai"><span class="al-ico">ℹ️</span>You'll get a real payment prompt on your phone — MTN and Airtel are both supported automatically.</div>
+            <div class="form-group"><label class="fl frq">Phone Number</label><input class="fc" id="cr-momo-phone" placeholder="+256 7XX XXX XXX" type="tel"/></div>
+            <div class="form-group"><label class="fl frq">Amount to Load (UGX)</label><input class="fc" type="number" id="cr-momo-amount" placeholder="10000" oninput="updateCreditCalc('momo')"/></div>
+            <div class="alert ag" id="cr-momo-calc" style="display:none"><span class="al-ico">🧮</span><span id="cr-momo-calc-text"></span></div>
+            <button class="btn btn-p" style="width:100%" id="cr-momo-btn" onclick="initiateSmsTopup()">📱 Load via Mobile Money</button>
+            <div id="cr-momo-status" style="display:none;margin-top:10px"></div>
+          </div>
+          <div id="credit-wallet-fields" style="display:none">
+            <div class="alert ai"><span class="al-ico">ℹ️</span>Transfer from your main billing wallet to SMS credit.</div>
+            <div class="form-group"><label class="fl">Main Wallet Balance</label><div style="font-size:16px;font-weight:800;color:var(--green)">UGX <span id="wallet-bal-display">0</span></div></div>
+            <div class="form-group"><label class="fl frq">Amount to Transfer (UGX)</label><input class="fc" type="number" id="cr-wal-amount" placeholder="5000" oninput="updateCreditCalc('wallet')"/></div>
+            <div class="alert ag" id="cr-wal-calc" style="display:none"><span class="al-ico">🧮</span><span id="cr-wal-calc-text"></span></div>
+            <button class="btn btn-g" style="width:100%" id="cr-wal-btn" onclick="transferFromWallet()">💸 Transfer to SMS Credit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">📊 Credit Usage Stats</span></div>
+        <div class="card-body">
+          <div class="g2">
+            <div style="background:var(--bg0);border:1px solid var(--border);border-radius:9px;padding:12px;text-align:center">
+              <div style="font-size:22px;font-weight:800;color:var(--green)" id="sms-sent-total">0</div>
+              <div style="font-size:10px;color:var(--t4);font-weight:700;text-transform:uppercase;margin-top:3px">SMS Sent Total</div>
+            </div>
+            <div style="background:var(--bg0);border:1px solid var(--border);border-radius:9px;padding:12px;text-align:center">
+              <div style="font-size:22px;font-weight:800;color:var(--blue)" id="sms-sent-today">0</div>
+              <div style="font-size:10px;color:var(--t4);font-weight:700;text-transform:uppercase;margin-top:3px">Sent Today</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">📋 Credit Transaction History</span></div>
+        <div class="tbl-wrap" style="max-height:340px;overflow-y:auto">
+          <table>
+            <thead><tr><th>Date</th><th>Method</th><th>Amount</th><th>Credits</th><th>Status</th></tr></thead>
+            <tbody id="credit-history-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="fhint" style="text-align:center">SMS pricing and provider are configured in Settings → SMS</div>
+    </div>
+  </div>

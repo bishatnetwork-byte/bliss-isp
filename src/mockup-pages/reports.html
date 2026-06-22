@@ -1,0 +1,14 @@
+<div class="stats-row">
+    <div class="stat blue"><div class="stat-lbl">All-Time Revenue</div><div class="stat-val" id="rp-rev">UGX 0</div><div class="stat-sub" id="rp-txn">0 transactions</div></div>
+    <div class="stat green"><div class="stat-lbl">Vouchers Sold</div><div class="stat-val" id="rp-vsold">0</div><div class="stat-sub" id="rp-vact">0 active</div></div>
+    <div class="stat yellow"><div class="stat-lbl">Avg. Sale</div><div class="stat-val" id="rp-avg">UGX 0</div><div class="stat-sub">Per transaction</div></div>
+    <div class="stat purple"><div class="stat-lbl">SMS Sent</div><div class="stat-val" id="rp-sms">0</div><div class="stat-sub">Total messages</div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="card-hd"><span class="card-title">💳 Revenue by Method</span></div><div class="card-body" id="rp-method"></div></div>
+    <div class="card"><div class="card-hd"><span class="card-title">🎫 Vouchers by Status</span></div><div class="card-body" id="rp-vstatus"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><span class="card-title">📋 Full Transaction Log</span><button class="btn btn-s btn-sm" onclick="exportPayCSV()">⬇ Export</button></div>
+    <div class="tbl-wrap"><table><thead><tr><th>TXN</th><th>Customer</th><th>Phone</th><th>Plan</th><th>Amount</th><th>Method</th><th>Voucher</th><th>Status</th><th>Date</th></tr></thead><tbody id="rp-tbody"></tbody></table></div>
+  </div>

@@ -1,0 +1,201 @@
+<div class="platform-wallet-card">
+    <div class="wallet-lbl">Total Platform Fees Collected</div>
+    <div class="wallet-bal" id="ad-platform-bal">UGX 0</div>
+    <div class="wallet-sub" id="ad-platform-sub">Across online payments, vouchers, SMS &amp; withdrawals</div>
+    <div style="position:absolute;right:22px;top:50%;transform:translateY(-50%);font-size:40px;opacity:.15">🛡️</div>
+  </div>
+
+  <div class="g2" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px" id="ad-fee-stats"></div>
+
+  <div class="g2" style="align-items:start;margin-bottom:18px">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-hd"><span class="card-title">💸 Withdraw Platform Fees</span><span class="badge bg-purple">Admin Earnings</span></div>
+      <div class="card-body">
+        <div class="alert ai"><span class="al-ico">ℹ️</span>This withdraws from accumulated platform fees — your earnings as the platform operator — separate from the client's main wallet.</div>
+        <div class="wallet-mini" style="background:rgba(124,58,237,.08);border-color:rgba(124,58,237,.25)"><span class="wallet-mini-lbl">Available to Withdraw</span><span class="wallet-mini-val" id="ad-fee-avail" style="color:var(--purple)">UGX 0</span></div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);margin:12px 0 8px;text-transform:uppercase;letter-spacing:.06em">Send To</div>
+        <div class="credit-method">
+          <div class="credit-opt sel" data-fwm="mtn" onclick="selFeeWdMethod(this)"><span class="credit-icon">📱</span>MTN MoMo</div>
+          <div class="credit-opt" data-fwm="airtel" onclick="selFeeWdMethod(this)"><span class="credit-icon">📱</span>Airtel Money</div>
+        </div>
+        <div class="form-group"><label class="fl frq">Admin Phone Number</label><input class="fc" id="fwd-phone" placeholder="+256 7XX XXX XXX" type="tel"/></div>
+        <div class="form-group"><label class="fl frq">Amount to Withdraw (UGX)</label><input class="fc" type="number" id="fwd-amount" placeholder="50000" oninput="updateFeeWdCalc()"/></div>
+        <div class="alert ag" id="fwd-calc" style="display:none"><span class="al-ico">🧮</span><span id="fwd-calc-text"></span></div>
+        <button class="btn btn-v" id="fwd-submit-btn" style="width:100%" onclick="doFeeWithdraw()">💸 Withdraw Platform Fees</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-hd"><span class="card-title">📋 Fee Withdrawal History</span></div>
+      <div class="tbl-wrap" style="max-height:330px;overflow-y:auto">
+        <table>
+          <thead><tr><th>ID</th><th>Amount</th><th>Method</th><th>Phone</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="fwd-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">⚙️ Platform Fee Rates</span></div>
+        <div class="card-body">
+          <div class="form-group"><label class="fl">Online Payment Fee (MTN / Airtel)</label>
+            <div style="display:flex;align-items:center;gap:8px"><input class="fc" type="number" step="0.1" id="fee-online" value="2.0"/><span style="font-size:12px;color:var(--t3);white-space:nowrap">% per transaction</span></div>
+          </div>
+          <div class="form-group"><label class="fl">Offline Voucher Fee</label>
+            <div style="display:flex;align-items:center;gap:8px"><input class="fc" type="number" step="0.1" id="fee-offline" value="1.0"/><span style="font-size:12px;color:var(--t3);white-space:nowrap">% per voucher sale</span></div>
+          </div>
+          <div class="form-group"><label class="fl">SMS Fee</label>
+            <div style="display:flex;align-items:center;gap:8px"><input class="fc" type="number" step="0.1" id="fee-sms" value="5.0"/><span style="font-size:12px;color:var(--t3);white-space:nowrap">% on SMS credit top-ups</span></div>
+          </div>
+          <div class="form-group"><label class="fl">Withdrawal Fee</label>
+            <div class="fg c2"><input class="fc" type="number" step="0.1" id="fee-wd-pct" placeholder="% rate" value="1.5"/><input class="fc" type="number" id="fee-wd-flat" placeholder="Flat UGX" value="500"/></div>
+            <div class="fhint">Charged as % + flat fee per withdrawal</div>
+          </div>
+          <button class="btn btn-p" style="width:100%" id="fees-save-btn" onclick="saveFees()">💾 Save Fee Rates</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">🎫 Voucher Prefix Rules</span></div>
+        <div class="card-body">
+          <div class="alert ai"><span class="al-ico">ℹ️</span>Controls the prefix on voucher codes (e.g. <span class="mono">071-K4X9</span>) so you can tell at a glance how a voucher was sold.</div>
+
+          <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">📱 Mobile Money Vouchers (Online)</div>
+          <div class="form-group">
+            <label class="fl">Prefix Source</label>
+            <select class="fc" id="vp-online-mode" onchange="updateVoucherPrefixUI()">
+              <option value="buyer">Buyer's phone — first 3 digits (e.g. 0700... → 700-XXXX)</option>
+              <option value="custom">Admin-chosen fixed prefix</option>
+            </select>
+          </div>
+          <div class="form-group" id="vp-online-custom-wrap">
+            <label class="fl">Custom Prefix</label>
+            <input class="fc" id="vp-online-custom" placeholder="e.g. PAY" maxlength="6" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
+          </div>
+          <div class="fhint" id="vp-online-preview" style="margin-bottom:14px"></div>
+
+          <div class="sep"></div>
+          <div style="font-size:11px;font-weight:700;color:var(--t3);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.06em">🎟️ Pre-Generated Vouchers (Offline)</div>
+          <div class="alert ai" style="margin-bottom:12px"><span class="al-ico">🔒</span>You were automatically assigned a unique prefix when you signed up, so it never collides with another business on this platform. You can change it below, but the server will reject anything already taken by someone else.</div>
+          <div class="form-group">
+            <label class="fl">Offline Prefix</label>
+            <input class="fc" id="vp-offline-mode" placeholder="e.g. 071" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase();updateVoucherPrefixUI()"/>
+          </div>
+          <div class="fhint" id="vp-offline-preview" style="margin-bottom:14px"></div>
+
+          <button class="btn btn-p" style="width:100%" id="vp-save-btn" onclick="saveVoucherPrefixRules()">💾 Save Prefix Rules</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">💰 Billing System Wallet</span></div>
+        <div class="card-body">
+          <div class="wallet-mini"><span class="wallet-mini-lbl">Main Wallet Balance</span><span class="wallet-mini-val" id="ad-main-wallet">UGX 0</span></div>
+          <div class="wallet-mini"><span class="wallet-mini-lbl">SMS Credit Balance</span><span class="wallet-mini-val" id="ad-sms-wallet">0 credits</span></div>
+          <div class="wallet-mini"><span class="wallet-mini-lbl">Total Withdrawn</span><span class="wallet-mini-val" id="ad-total-wd">UGX 0</span></div>
+          <div class="wallet-mini" style="margin-bottom:0"><span class="wallet-mini-lbl">Net Revenue (after fees)</span><span class="wallet-mini-val" id="ad-net-rev">UGX 0</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">👥 Platform Users</span><button class="btn btn-p btn-sm" onclick="showAddUserModal()">＋ Add User</button></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Phone</th><th>Role</th><th>Tab Access</th><th>Status</th><th>Last Active</th><th></th></tr></thead>
+            <tbody id="ad-users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">📋 Fee Breakdown Log</span></div>
+        <div class="tbl-wrap" style="max-height:320px;overflow-y:auto">
+          <table>
+            <thead><tr><th>Source</th><th>Transaction</th><th>Gross</th><th>Fee Rate</th><th>Fee Collected</th></tr></thead>
+            <tbody id="ad-fee-log"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+    <span style="font-size:14px;font-weight:800;color:var(--t1)">🔌 Platform Integrations</span>
+    <span class="fhint" style="margin:0">Each business connects its own accounts — manage MarzPay and SMS under Settings</span>
+  </div>
+
+  <div class="alert ai"><span class="al-ico">ℹ️</span>MarzPay (payments) and SMS gateway are configured per-business under <b>Settings → Payments</b> and <b>Settings → SMS</b>. The integrations below (Domain, Email, CHR) are also per-business and live here in Admin since they're less frequently touched.</div>
+
+  <div class="card">
+    <div class="card-hd"><span class="card-title">📧 Email Gateway</span><span class="badge" id="eg-status-badge">Not Connected</span></div>
+    <div class="card-body">
+      <div class="alert ai"><span class="al-ico">ℹ️</span>Powers real email delivery for withdraw-passcode verification codes and any other account emails (currently those codes only show in an on-screen notification — connect this to actually send them).</div>
+      <div class="fg c2">
+        <div class="form-group"><label class="fl">Provider</label><select class="fc" id="eg-provider"><option value="sendgrid">SendGrid</option><option value="mailgun">Mailgun</option><option value="postmark">Postmark</option><option value="ses">Amazon SES</option><option value="custom">Custom REST</option></select></div>
+        <div class="form-group"><label class="fl frq">API Key</label><input class="fc" id="eg-key" type="password" placeholder="Your email provider API key"/><div class="fhint" id="eg-key-hint"></div></div>
+      </div>
+      <div class="fg c2">
+        <div class="form-group"><label class="fl frq">From Email</label><input class="fc" id="eg-from-email" placeholder="noreply@yourdomain.com"/><div class="fhint">Must be a verified sender on your provider</div></div>
+        <div class="form-group"><label class="fl">From Name</label><input class="fc" id="eg-from-name" placeholder="HotspotPro"/></div>
+      </div>
+      <div style="background:var(--bg0);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:4px">
+        <div style="font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">API Endpoint Used (SendGrid)</div>
+        <div class="mono" style="font-size:10px;color:var(--green)">POST https://api.sendgrid.com/v3/mail/send</div>
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-p" onclick="saveEmailGateway()">🔌 Connect &amp; Save</button>
+        <button class="btn btn-s btn-sm" onclick="testGateway('email')">📡 Send Test Email</button>
+      </div>
+      <div class="fhint" style="margin-top:8px">SendGrid requires Sender Authentication (verify your From Email) before it will deliver — see provider docs.</div>
+    </div>
+  </div>
+
+
+  <div class="card">
+    <div class="card-hd"><span class="card-title">🌍 Domain Provider — IONOS</span><span class="badge" id="dp-status-badge">Not Connected</span></div>
+    <div class="card-body">
+      <div class="alert ai"><span class="al-ico">ℹ️</span>IONOS' API manages DNS records on domains you already own there. Use this to automatically point your hotspot/captive-portal or CHR hostname (e.g. <span class="mono">hotspot.yourdomain.com</span>) at your server's IP — it does not register new domains via chat.</div>
+      <div class="fg c2">
+        <div class="form-group"><label class="fl frq">IONOS API Key</label><input class="fc" id="dp-key" type="password" placeholder="Public prefix.secret key"/><div class="fhint" id="dp-key-hint"></div></div>
+        <div class="form-group"><label class="fl">Domain</label><input class="fc" id="dp-domain" placeholder="yourdomain.com"/></div>
+      </div>
+      <div class="fg c2">
+        <div class="form-group"><label class="fl">Record Type</label><select class="fc" id="dp-rectype"><option value="A">A (IPv4 address)</option><option value="CNAME">CNAME (alias)</option></select></div>
+        <div class="form-group"><label class="fl">Target Value</label><input class="fc" id="dp-target" placeholder="Your CHR public IP or hostname"/></div>
+      </div>
+      <div style="background:var(--bg0);border:1px solid var(--border);border-radius:8px;padding:10px">
+        <div style="font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">API Endpoint Used</div>
+        <div class="mono" style="font-size:10px;color:var(--green)">POST https://api.hosting.ionos.com/dns/v1/zones/{zoneId}/records</div>
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-p" onclick="saveDomainProvider()">🔌 Connect &amp; Save</button>
+        <button class="btn btn-s btn-sm" onclick="testGateway('domain')">📡 Test</button>
+      </div>
+      <div class="fhint" style="margin-top:8px">Generate an API key at IONOS Cloud Panel → API Keys. Keys are scoped per-contract.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><span class="card-title">📡 CHR MikroTik Setup Wizard</span><span class="badge" id="chr-status-badge">Not Connected</span></div>
+    <div class="card-body">
+      <div class="alert ai"><span class="al-ico">ℹ️</span>CHR (Cloud Hosted Router) is MikroTik's RouterOS image for cloud VMs (AWS, DigitalOcean, IONOS Cloud, etc). This wizard walks through deploying and connecting one as your central API/RADIUS endpoint.</div>
+      <div style="display:flex;gap:6px;margin-bottom:18px" id="chr-step-dots"></div>
+      <div id="chr-wizard-body"></div>
+      <div class="btn-row" style="margin-top:16px;justify-content:space-between">
+        <button class="btn btn-s" id="chr-back-btn" onclick="chrWizardBack()">← Back</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-s btn-sm" onclick="testGateway('chr')">📡 Test Connection</button>
+          <button class="btn btn-p" id="chr-next-btn" onclick="chrWizardNext()">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><span class="card-title">🖥️ Remote Access — WinBox</span><span class="badge bg-blue" id="ra-count-badge">0 routers</span></div>
+    <div class="card-body">
+      <div class="alert ai"><span class="al-ico">ℹ️</span>Browsers can't open a direct WinBox session — clicking "Open in WinBox" launches the WinBox app already installed on this computer (via the <span class="mono">winbox://</span> link) and pre-fills the address. If WinBox isn't installed, use the download link first.</div>
+      <div id="ra-list"></div>
+    </div>
+  </div>
