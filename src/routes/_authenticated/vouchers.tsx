@@ -111,7 +111,7 @@ function VouchersPage() {
           const list = all.filter(matches);
           setHTML(root, "vtbody", list.length ? list.map(v => {
             const badge = v.status === "active" ? "bg-green" : v.status === "paid" ? "bg-blue" : v.status === "expired" ? "bg-red" : v.status === "revoked" ? "bg-gray" : "bg-yellow";
-            return `<tr data-id="${v.id}">
+            return `<tr data-id="${v.id}" data-code="${esc(v.code)}">
               <td><input type="checkbox" class="vchk"/></td>
               <td class="mono" style="font-weight:700">${esc(v.code)}</td>
               <td>${esc(v.customer_name ?? "—")}</td>
