@@ -94,9 +94,9 @@ function SmsCreditPage() {
 
         const rows = (purchases ?? []).map(p => `<tr>
           <td>${new Date(p.created_at).toLocaleString()}</td>
-          <td>${p.credits.toLocaleString()}</td>
-          <td>${fmt(Number(p.amount))}</td>
           <td>${esc(p.payment_method)}</td>
+          <td>${fmt(Number(p.amount))}</td>
+          <td>${p.credits.toLocaleString()}</td>
           <td><span class="badge bg-green">${esc(p.status)}</span></td>
         </tr>`).join("");
         setHTML(root, "credit-history-tbody", rows || `<tr><td colspan="5"><div class="empty">No purchases yet</div></td></tr>`);
