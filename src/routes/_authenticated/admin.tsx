@@ -382,7 +382,7 @@ function AdminPage() {
       ) : null}
       {access?.isPlatformAdmin ? <div data-admin-extra="gateways"><PlatformGatewaysCard /></div> : null}
       {access?.isPlatformAdmin ? <div data-admin-extra="fees"><PlatformSmsRevenueCard /></div> : null}
-      <MikrotikOverviewCard />
+      <div data-admin-extra="mikrotik"><MikrotikOverviewCard /></div>
       <div className="card" data-admin-extra="fees" style={{ marginTop: 16 }}>
 
         <div className="card-hd">
