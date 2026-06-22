@@ -70,8 +70,7 @@ export const getPlatformSmsRevenue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("sms_credit_purchases")
       .select("owner_id,amount,credits,status,created_at")
       .eq("status", "completed")
@@ -96,8 +95,7 @@ export const getPlatformMikrotikOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("routers")
       .select("id,name,host,status,last_seen,owner_id,created_at")
       .order("created_at", { ascending: false })
