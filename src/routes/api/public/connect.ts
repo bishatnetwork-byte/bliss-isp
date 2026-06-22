@@ -63,8 +63,8 @@ export const Route = createFileRoute("/api/public/connect")({
 
         await supabaseAdmin.from("audit_logs").insert({
           owner_id: body.owner, action: "voucher_connect", entity: "voucher",
-          metadata: { code: v.code, mac: body.mac, ip: body.ip, router_id: v.router_id } as never,
-        });
+          metadata: { code: v.code, mac: body.mac, ip: body.ip, router_id: v.router_id },
+        } as never);
 
         if (!router) return Response.json({ ok: true, pushed: false, reason: "no_router" });
 
