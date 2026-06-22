@@ -16,9 +16,10 @@
   --input-bg:#f9fafb; --hover:#f3f4f6;
   --shadow:0 4px 24px rgba(0,0,0,.08);
 }
-*{box-sizing:border-box;margin:0;padding:0}
+.mockup-page *,#sidebar *,#main *,#topbar *,#sidebar-backdrop *{box-sizing:border-box}
+*{box-sizing:border-box}
 html,body{height:100%;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg0);color:var(--t2)}
-body{display:flex;min-height:100vh;transition:background .2s,color .2s}
+body:has(#sidebar){display:flex;min-height:100vh;transition:background .2s,color .2s}
 ::selection{background:var(--accent);color:#fff}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:var(--bg0)}
