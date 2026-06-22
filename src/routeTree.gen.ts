@@ -35,6 +35,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as ApiPublicConnectRouteImport } from './routes/api/public/connect'
 import { Route as ApiPublicWebhooksMpesaRouteImport } from './routes/api/public/webhooks/mpesa'
 import { Route as ApiPublicWebhooksMarzpayRouteImport } from './routes/api/public/webhooks/marzpay'
+import { Route as ApiPublicCronPurgeVouchersRouteImport } from './routes/api/public/cron/purge-vouchers'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -167,6 +168,12 @@ const ApiPublicWebhooksMarzpayRoute =
     path: '/api/public/webhooks/marzpay',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronPurgeVouchersRoute =
+  ApiPublicCronPurgeVouchersRouteImport.update({
+    id: '/api/public/cron/purge-vouchers',
+    path: '/api/public/cron/purge-vouchers',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
@@ -219,6 +227,7 @@ export interface FileRoutesByTo {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
@@ -248,6 +257,7 @@ export interface FileRoutesById {
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/purge-vouchers'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   fileRoutesByTo: FileRoutesByTo
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/purge-vouchers'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   id:
@@ -332,6 +344,7 @@ export interface FileRouteTypes {
     | '/_authenticated/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/purge-vouchers'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   fileRoutesById: FileRoutesById
@@ -343,6 +356,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PTenantRoute: typeof PTenantRoute
   ApiPublicConnectRoute: typeof ApiPublicConnectRoute
+  ApiPublicCronPurgeVouchersRoute: typeof ApiPublicCronPurgeVouchersRoute
   ApiPublicWebhooksMarzpayRoute: typeof ApiPublicWebhooksMarzpayRoute
   ApiPublicWebhooksMpesaRoute: typeof ApiPublicWebhooksMpesaRoute
 }
@@ -531,6 +545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksMarzpayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/purge-vouchers': {
+      id: '/api/public/cron/purge-vouchers'
+      path: '/api/public/cron/purge-vouchers'
+      fullPath: '/api/public/cron/purge-vouchers'
+      preLoaderRoute: typeof ApiPublicCronPurgeVouchersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -586,6 +607,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   PTenantRoute: PTenantRoute,
   ApiPublicConnectRoute: ApiPublicConnectRoute,
+  ApiPublicCronPurgeVouchersRoute: ApiPublicCronPurgeVouchersRoute,
   ApiPublicWebhooksMarzpayRoute: ApiPublicWebhooksMarzpayRoute,
   ApiPublicWebhooksMpesaRoute: ApiPublicWebhooksMpesaRoute,
 }

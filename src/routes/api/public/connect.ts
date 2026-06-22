@@ -33,7 +33,7 @@ export const Route = createFileRoute("/api/public/connect")({
         );
 
         const { data: v, error: vErr } = await sb.from("vouchers")
-          .select("id,code,owner_id,plan_id,router_id,activated_at,status")
+          .select("id,code,owner_id,plan_id,router_id,activated_at,status,customer_phone,customer_name,plans(name,duration_minutes)")
           .eq("id", body.voucher_id).maybeSingle();
         if (vErr || !v) return Response.json({ ok: false, error: "voucher_not_found" }, { status: 404 });
         if (v.owner_id !== body.owner) return Response.json({ ok: false, error: "owner_mismatch" }, { status: 403 });
@@ -41,9 +41,6 @@ export const Route = createFileRoute("/api/public/connect")({
           return Response.json({ ok: false, error: "not_active" }, { status: 409 });
         }
 
-        // Find a router for this tenant — prefer voucher.router_id, else any.
-        // Service role needed to read decrypted credentials; we're already
-        // past auth (voucher must be active in DB).
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         let router = null as null | { host: string; port: number; username: string; password_encrypted: string; use_tls: boolean };
         if (v.router_id) {
@@ -58,9 +55,17 @@ export const Route = createFileRoute("/api/public/connect")({
           router = data ?? null;
         }
 
-        // If no router is configured we still consider the redemption successful
-        // — the DB has marked the voucher active; the customer just won't be
-        // auto-logged-in over REST.
+        const { notifyTelegram } = await import("@/lib/telegram.server");
+        const planName = (v.plans as { name?: string } | null)?.name ?? "-";
+        notifyTelegram(body.owner, "wifiActivity",
+          `📶 <b>Voucher connected</b>\nCode: ${v.code}\nPlan: ${planName}\nPhone: ${v.customer_phone ?? "-"}\nMAC: ${body.mac ?? "-"}`
+        ).catch(() => {});
+
+        await supabaseAdmin.from("audit_logs").insert({
+          owner_id: body.owner, action: "voucher_connect", entity: "voucher",
+          metadata: { code: v.code, mac: body.mac, ip: body.ip, router_id: v.router_id },
+        } as never);
+
         if (!router) return Response.json({ ok: true, pushed: false, reason: "no_router" });
 
         const creds: RouterCreds = {

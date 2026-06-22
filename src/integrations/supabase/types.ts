@@ -1407,6 +1407,10 @@ export type Database = {
         Returns: string
       }
       rpc_get_portal: { Args: { _owner: string }; Returns: Json }
+      rpc_log_event: {
+        Args: { _action: string; _entity: string; _metadata?: Json }
+        Returns: string
+      }
       rpc_mark_batch_printed: {
         Args: { _batch_id: string; _count: number }
         Returns: {
@@ -1432,6 +1436,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      rpc_purge_old_vouchers: { Args: { _days?: number }; Returns: number }
       rpc_redeem_voucher_public: {
         Args: { _code: string; _ip?: string; _mac?: string; _owner: string }
         Returns: Json
