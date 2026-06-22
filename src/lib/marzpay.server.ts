@@ -15,7 +15,11 @@ export type StkResult =
   | { ok: true; provider_ref: string; raw: unknown }
   | { ok: false; error: string; raw?: unknown };
 
-type GatewayDb = { from: (table: "platform_gateways" | "gateways") => any };
+type GatewayQuery = {
+  eq: (column: string, value: unknown) => GatewayQuery;
+  maybeSingle: () => Promise<{ data: unknown }>;
+};
+type GatewayDb = { from: (table: "platform_gateways" | "gateways") => { select: (columns: string) => GatewayQuery } };
 
 function normalizePhone(phone: string) {
   const d = (phone || "").replace(/\D/g, "");
