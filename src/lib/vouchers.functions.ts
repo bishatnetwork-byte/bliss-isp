@@ -49,6 +49,18 @@ export const listBatches = createServerFn({ method: "GET" })
     return (data ?? []) as unknown as PrintBatchRow[];
   });
 
+export const listBatchVouchers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ batch_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("vouchers")
+      .select("code,status,expires_at,plans(name,price,currency,duration_minutes)")
+      .eq("batch_id", data.batch_id).is("deleted_at", null).order("created_at");
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
 export const createVoucher = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
