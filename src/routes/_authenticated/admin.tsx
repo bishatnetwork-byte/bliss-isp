@@ -18,6 +18,24 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 type Role = "admin" | "staff" | "viewer";
 
+const TAB_OPTIONS: { value: string; label: string }[] = [
+  { value: "dashboard", label: "Dashboard" },
+  { value: "sell", label: "Sell / Create" },
+  { value: "vouchers", label: "Voucher Manager" },
+  { value: "printcenter", label: "Print Center" },
+  { value: "captive", label: "Captive Portal" },
+  { value: "wifiprices", label: "WiFi Prices" },
+  { value: "payments", label: "Payments" },
+  { value: "clients", label: "Live Clients" },
+  { value: "wifiusers", label: "WiFi Users" },
+  { value: "smscredit", label: "SMS Credit" },
+  { value: "bulksms", label: "Bulk SMS" },
+  { value: "withdraw", label: "Withdraw" },
+  { value: "mikrotiks", label: "MikroTik Devices" },
+  { value: "reports", label: "Reports" },
+  { value: "settings", label: "Settings" },
+];
+
 function AdminPage() {
   const { data: access } = useAccess();
   const qc = useQueryClient();
@@ -39,6 +57,7 @@ function AdminPage() {
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("staff");
+  const [editing, setEditing] = useState<{ memberId: string; name: string; tabs: string[] } | null>(null);
 
   const canManage =
     access?.isPlatformAdmin || access?.tenantRole === "owner" || access?.tenantRole === "admin";
@@ -69,10 +88,9 @@ function AdminPage() {
       </tr>`);
     }
     for (const m of data.members) {
-      const tabs = Array.isArray(m.allowed_tabs) && (m.allowed_tabs as unknown[]).length > 0
-        ? (m.allowed_tabs as string[]).join(", ")
-        : "Role default";
-      rows.push(`<tr data-member-id="${m.member_id}">
+      const tabsList = (m.allowed_tabs as string[] | null) ?? [];
+      const tabsLabel = tabsList.length > 0 ? tabsList.join(", ") : "Role default";
+      rows.push(`<tr data-member-id="${m.member_id}" data-member-name="${escapeHtml(m.profile?.display_name ?? "Member")}" data-tabs='${escapeHtml(JSON.stringify(tabsList))}'>
         <td><b>${escapeHtml(m.profile?.display_name ?? "—")}</b></td>
         <td>${escapeHtml(m.profile?.phone ?? "—")}</td>
         <td>
@@ -82,7 +100,7 @@ function AdminPage() {
             <option value="viewer"${m.role === "viewer" ? " selected" : ""}>Viewer</option>
           </select>
         </td>
-        <td style="font-size:11px;color:var(--t3)">${escapeHtml(tabs)}</td>
+        <td style="font-size:11px;color:var(--t3)">${escapeHtml(tabsLabel)} ${canManage ? '<button class="btn btn-s btn-sm" data-act="tabs" style="margin-left:6px">Edit</button>' : ""}</td>
         <td><span class="badge bg-green">Active</span></td>
         <td style="font-size:11px;color:var(--t3)">${new Date(m.created_at).toLocaleDateString()}</td>
         <td>${canManage ? '<button class="btn btn-s btn-sm" data-act="remove">Remove</button>' : ""}</td>
@@ -104,6 +122,11 @@ function AdminPage() {
         if (confirm("Remove this member?")) remove.mutate({ data: { member_id: memberId } });
       } else if (act === "role" && target instanceof HTMLSelectElement) {
         update.mutate({ data: { member_id: memberId, role: target.value as Role } });
+      } else if (act === "tabs") {
+        const name = row.getAttribute("data-member-name") ?? "Member";
+        let tabs: string[] = [];
+        try { tabs = JSON.parse(row.getAttribute("data-tabs") || "[]"); } catch { /* ignore */ }
+        setEditing({ memberId, name, tabs });
       }
     };
     tbody.addEventListener("click", handler);
@@ -165,7 +188,89 @@ function AdminPage() {
           </div>
         </div>
       ) : null}
+      {editing ? (
+        <AllowedTabsModal
+          memberName={editing.name}
+          initial={editing.tabs}
+          onClose={() => setEditing(null)}
+          onSave={(tabs) => {
+            update.mutate(
+              { data: { member_id: editing.memberId, allowed_tabs: tabs } },
+              { onSuccess: () => setEditing(null) },
+            );
+          }}
+          saving={update.isPending}
+        />
+      ) : null}
     </>
+  );
+}
+
+function AllowedTabsModal({
+  memberName,
+  initial,
+  onClose,
+  onSave,
+  saving,
+}: {
+  memberName: string;
+  initial: string[];
+  onClose: () => void;
+  onSave: (tabs: string[]) => void;
+  saving: boolean;
+}) {
+  const [selected, setSelected] = useState<Set<string>>(new Set(initial));
+  const toggle = (v: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(v)) next.delete(v); else next.add(v);
+      return next;
+    });
+  };
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,.55)",
+        zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="card"
+        style={{ maxWidth: 560, width: "100%", margin: 0 }}
+      >
+        <div className="card-hd">
+          <span className="card-title">🔐 Allowed Tabs — {memberName}</span>
+          <button className="btn btn-s btn-sm" onClick={onClose}>✕</button>
+        </div>
+        <div className="card-body">
+          <div className="fhint" style={{ marginBottom: 10 }}>
+            Leave all unchecked to fall back to role defaults. Selected tabs override the role.
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8 }}>
+            {TAB_OPTIONS.map((t) => (
+              <label key={t.value} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                <input
+                  type="checkbox"
+                  checked={selected.has(t.value)}
+                  onChange={() => toggle(t.value)}
+                />
+                {t.label}
+              </label>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 14, justifyContent: "flex-end" }}>
+            <button className="btn btn-s" onClick={onClose}>Cancel</button>
+            <button
+              className="btn btn-p"
+              disabled={saving}
+              onClick={() => onSave(Array.from(selected))}
+            >{saving ? "Saving…" : "Save"}</button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
