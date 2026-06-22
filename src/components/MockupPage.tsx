@@ -1,20 +1,30 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Renders a chunk of the original HotspotPro HTML mockup inside the React shell.
- * The mockup CSS (src/styles/mockup.css) provides the styling. Backend wiring is
- * added per-page in follow-up turns; for now interactive controls are placeholders.
+ * Renders mockup HTML and runs a hydrate callback after mount/data change.
+ * The hydrate fn receives the container element so it can wire IDs.
  */
-export function MockupPage({ html, title }: { html: string; title: string }) {
+export function MockupPage({
+  html, title, hydrate, deps = [],
+}: {
+  html: string;
+  title: string;
+  hydrate?: (root: HTMLElement) => void | (() => void);
+  deps?: unknown[];
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Title and scroll to top on mount
     if (typeof document !== "undefined") document.title = `${title} — HotspotPro`;
-    ref.current?.scrollTo?.({ top: 0 });
   }, [title]);
 
-  // The mockup uses class="page" which is display:none unless .active is present.
+  useEffect(() => {
+    if (!ref.current || !hydrate) return;
+    const cleanup = hydrate(ref.current);
+    return typeof cleanup === "function" ? cleanup : undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
   return (
     <div
       ref={ref}
