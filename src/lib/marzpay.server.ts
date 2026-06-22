@@ -2,6 +2,7 @@
 // Reads tenant gateway config (kind='payment', provider='marzpay') and pushes
 // a payment prompt to the buyer's phone. Webhook confirms via
 // /api/public/webhooks/marzpay and calls rpc_complete_voucher_payment.
+import { Buffer } from "node:buffer";
 import { decryptSecret } from "@/lib/crypto.server";
 
 export type MarzpayConfig = {
