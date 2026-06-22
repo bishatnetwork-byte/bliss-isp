@@ -42,8 +42,26 @@ function BulkSmsPage() {
       hydrate={(root) => {
         setText(root, "sms-cr-avail", wallet?.sms_credits ?? 0);
 
+        // Single/Bulk tab switching (mockup uses inline onclick="selSmsTab")
+        const singlePanel = root.querySelector<HTMLElement>("#sms-single-panel");
+        const bulkPanel = root.querySelector<HTMLElement>("#sms-bulk-panel");
+        let mode: "single" | "bulk" = "single";
+        const setMode = (m: "single" | "bulk") => {
+          mode = m;
+          if (singlePanel) singlePanel.style.display = m === "single" ? "" : "none";
+          if (bulkPanel) bulkPanel.style.display = m === "bulk" ? "" : "none";
+          root.querySelectorAll<HTMLElement>("[data-st]").forEach(t => {
+            t.classList.toggle("act", t.dataset.st === m);
+          });
+          updateSmsCount();
+        };
+        root.querySelectorAll<HTMLElement>("[data-st]").forEach(t => {
+          t.removeAttribute("onclick");
+          t.addEventListener("click", () => setMode((t.dataset.st as "single" | "bulk") ?? "single"));
+        });
+
         const renderChips = () => {
-          setHTML(root, "sms-chips",
+          setHTML(root, "chips-wrap",
             bulkChips.map(p => `<span class="chip" data-phone="${esc(p)}" style="display:inline-flex;align-items:center;gap:4px;background:var(--bg2);padding:3px 8px;border-radius:12px;font-size:11px;margin:2px">${esc(p)} <button data-rm="${esc(p)}" style="background:none;border:0;color:var(--muted);cursor:pointer">×</button></span>`).join(""));
           root.querySelectorAll<HTMLButtonElement>("[data-rm]").forEach(b =>
             b.addEventListener("click", () => {
@@ -57,12 +75,15 @@ function BulkSmsPage() {
           const body = getVal(root, "sms-msg");
           const len = body.length;
           const parts = len <= 160 ? 1 : Math.ceil(len / 153);
-          const cost = parts * bulkChips.length;
+          const recips = mode === "bulk" ? bulkChips.length : (getVal(root, "sms-s-phone") ? 1 : 0);
+          const cost = parts * Math.max(1, recips);
           setText(root, "sms-char-count", `${len} chars · ${parts} part(s)`);
           setText(root, "sms-send-cost", `${cost} credits`);
         };
 
         on(root, "sms-msg", "input", updateSmsCount);
+        on(root, "sms-s-phone", "input", updateSmsCount);
+        root.querySelectorAll<HTMLElement>("[data-st]").forEach(() => {}); // noop placeholder
         on(root, "sms-chip-input", "keydown", (e) => {
           const ev = e as KeyboardEvent;
           if (ev.key === "Enter" || ev.key === ",") {
