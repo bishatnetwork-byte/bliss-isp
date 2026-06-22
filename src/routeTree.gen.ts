@@ -36,8 +36,10 @@ import { Route as ApiPublicConnectRouteImport } from './routes/api/public/connec
 import { Route as ApiPublicWebhooksMpesaRouteImport } from './routes/api/public/webhooks/mpesa'
 import { Route as ApiPublicWebhooksMarzpayRouteImport } from './routes/api/public/webhooks/marzpay'
 import { Route as ApiPublicSessionsEventRouteImport } from './routes/api/public/sessions/event'
+import { Route as ApiPublicCronVoucherExpiryRemindersRouteImport } from './routes/api/public/cron/voucher-expiry-reminders'
 import { Route as ApiPublicCronPurgeVouchersRouteImport } from './routes/api/public/cron/purge-vouchers'
 import { Route as ApiPublicCronProbeRoutersRouteImport } from './routes/api/public/cron/probe-routers'
+import { Route as ApiPublicCronDispatchCampaignsRouteImport } from './routes/api/public/cron/dispatch-campaigns'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -175,6 +177,12 @@ const ApiPublicSessionsEventRoute = ApiPublicSessionsEventRouteImport.update({
   path: '/api/public/sessions/event',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronVoucherExpiryRemindersRoute =
+  ApiPublicCronVoucherExpiryRemindersRouteImport.update({
+    id: '/api/public/cron/voucher-expiry-reminders',
+    path: '/api/public/cron/voucher-expiry-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronPurgeVouchersRoute =
   ApiPublicCronPurgeVouchersRouteImport.update({
     id: '/api/public/cron/purge-vouchers',
@@ -185,6 +193,12 @@ const ApiPublicCronProbeRoutersRoute =
   ApiPublicCronProbeRoutersRouteImport.update({
     id: '/api/public/cron/probe-routers',
     path: '/api/public/cron/probe-routers',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronDispatchCampaignsRoute =
+  ApiPublicCronDispatchCampaignsRouteImport.update({
+    id: '/api/public/cron/dispatch-campaigns',
+    path: '/api/public/cron/dispatch-campaigns',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -212,8 +226,10 @@ export interface FileRoutesByFullPath {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
   '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
+  '/api/public/cron/voucher-expiry-reminders': typeof ApiPublicCronVoucherExpiryRemindersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
@@ -242,8 +258,10 @@ export interface FileRoutesByTo {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
   '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
+  '/api/public/cron/voucher-expiry-reminders': typeof ApiPublicCronVoucherExpiryRemindersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
@@ -274,8 +292,10 @@ export interface FileRoutesById {
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
   '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
+  '/api/public/cron/voucher-expiry-reminders': typeof ApiPublicCronVoucherExpiryRemindersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
@@ -306,8 +326,10 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/dispatch-campaigns'
     | '/api/public/cron/probe-routers'
     | '/api/public/cron/purge-vouchers'
+    | '/api/public/cron/voucher-expiry-reminders'
     | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
@@ -336,8 +358,10 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/dispatch-campaigns'
     | '/api/public/cron/probe-routers'
     | '/api/public/cron/purge-vouchers'
+    | '/api/public/cron/voucher-expiry-reminders'
     | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
@@ -367,8 +391,10 @@ export interface FileRouteTypes {
     | '/_authenticated/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/dispatch-campaigns'
     | '/api/public/cron/probe-routers'
     | '/api/public/cron/purge-vouchers'
+    | '/api/public/cron/voucher-expiry-reminders'
     | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
@@ -381,8 +407,10 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PTenantRoute: typeof PTenantRoute
   ApiPublicConnectRoute: typeof ApiPublicConnectRoute
+  ApiPublicCronDispatchCampaignsRoute: typeof ApiPublicCronDispatchCampaignsRoute
   ApiPublicCronProbeRoutersRoute: typeof ApiPublicCronProbeRoutersRoute
   ApiPublicCronPurgeVouchersRoute: typeof ApiPublicCronPurgeVouchersRoute
+  ApiPublicCronVoucherExpiryRemindersRoute: typeof ApiPublicCronVoucherExpiryRemindersRoute
   ApiPublicSessionsEventRoute: typeof ApiPublicSessionsEventRoute
   ApiPublicWebhooksMarzpayRoute: typeof ApiPublicWebhooksMarzpayRoute
   ApiPublicWebhooksMpesaRoute: typeof ApiPublicWebhooksMpesaRoute
@@ -579,6 +607,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSessionsEventRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/voucher-expiry-reminders': {
+      id: '/api/public/cron/voucher-expiry-reminders'
+      path: '/api/public/cron/voucher-expiry-reminders'
+      fullPath: '/api/public/cron/voucher-expiry-reminders'
+      preLoaderRoute: typeof ApiPublicCronVoucherExpiryRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/purge-vouchers': {
       id: '/api/public/cron/purge-vouchers'
       path: '/api/public/cron/purge-vouchers'
@@ -591,6 +626,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/probe-routers'
       fullPath: '/api/public/cron/probe-routers'
       preLoaderRoute: typeof ApiPublicCronProbeRoutersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/dispatch-campaigns': {
+      id: '/api/public/cron/dispatch-campaigns'
+      path: '/api/public/cron/dispatch-campaigns'
+      fullPath: '/api/public/cron/dispatch-campaigns'
+      preLoaderRoute: typeof ApiPublicCronDispatchCampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -648,8 +690,11 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   PTenantRoute: PTenantRoute,
   ApiPublicConnectRoute: ApiPublicConnectRoute,
+  ApiPublicCronDispatchCampaignsRoute: ApiPublicCronDispatchCampaignsRoute,
   ApiPublicCronProbeRoutersRoute: ApiPublicCronProbeRoutersRoute,
   ApiPublicCronPurgeVouchersRoute: ApiPublicCronPurgeVouchersRoute,
+  ApiPublicCronVoucherExpiryRemindersRoute:
+    ApiPublicCronVoucherExpiryRemindersRoute,
   ApiPublicSessionsEventRoute: ApiPublicSessionsEventRoute,
   ApiPublicWebhooksMarzpayRoute: ApiPublicWebhooksMarzpayRoute,
   ApiPublicWebhooksMpesaRoute: ApiPublicWebhooksMpesaRoute,

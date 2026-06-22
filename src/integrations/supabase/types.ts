@@ -756,6 +756,54 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_campaigns: {
+        Row: {
+          body: string
+          created_at: string
+          dispatched_at: string | null
+          failed_count: number
+          id: string
+          last_error: string | null
+          owner_id: string
+          recipients: Json
+          scheduled_at: string
+          sent_count: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          dispatched_at?: string | null
+          failed_count?: number
+          id?: string
+          last_error?: string | null
+          owner_id: string
+          recipients?: Json
+          scheduled_at: string
+          sent_count?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          dispatched_at?: string | null
+          failed_count?: number
+          id?: string
+          last_error?: string | null
+          owner_id?: string
+          recipients?: Json
+          scheduled_at?: string
+          sent_count?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sms_credit_purchases: {
         Row: {
           amount: number
@@ -1097,6 +1145,7 @@ export type Database = {
           mac_address: string | null
           owner_id: string
           plan_id: string | null
+          reminder_sent_at: string | null
           router_id: string | null
           source: string
           status: string
@@ -1119,6 +1168,7 @@ export type Database = {
           mac_address?: string | null
           owner_id: string
           plan_id?: string | null
+          reminder_sent_at?: string | null
           router_id?: string | null
           source?: string
           status?: string
@@ -1141,6 +1191,7 @@ export type Database = {
           mac_address?: string | null
           owner_id?: string
           plan_id?: string | null
+          reminder_sent_at?: string | null
           router_id?: string | null
           source?: string
           status?: string
@@ -1333,6 +1384,7 @@ export type Database = {
           mac_address: string | null
           owner_id: string
           plan_id: string | null
+          reminder_sent_at: string | null
           router_id: string | null
           source: string
           status: string
@@ -1373,6 +1425,7 @@ export type Database = {
           mac_address: string | null
           owner_id: string
           plan_id: string | null
+          reminder_sent_at: string | null
           router_id: string | null
           source: string
           status: string
@@ -1497,6 +1550,7 @@ export type Database = {
           mac_address: string | null
           owner_id: string
           plan_id: string | null
+          reminder_sent_at: string | null
           router_id: string | null
           source: string
           status: string
@@ -1528,6 +1582,7 @@ export type Database = {
           mac_address: string | null
           owner_id: string
           plan_id: string | null
+          reminder_sent_at: string | null
           router_id: string | null
           source: string
           status: string
