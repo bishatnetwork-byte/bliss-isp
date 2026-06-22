@@ -1,7 +1,10 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccess, canSeeRoute } from "@/hooks/useAccess";
+import { getDashboardStats } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -64,7 +67,27 @@ function AdminShell() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [email, setEmail] = useState("");
+  const [qaOpen, setQaOpen] = useState(false);
+  const qaRef = useRef<HTMLDivElement | null>(null);
   const { data: access } = useAccess();
+
+  const statsFn = useServerFn(getDashboardStats);
+  const { data: stats } = useQuery({
+    queryKey: ["topbar-stats"],
+    queryFn: () => statsFn(),
+    refetchInterval: 15_000,
+    staleTime: 10_000,
+  });
+  const online = stats?.onlineSessions ?? 0;
+
+  useEffect(() => {
+    if (!qaOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (qaRef.current && !qaRef.current.contains(e.target as Node)) setQaOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [qaOpen]);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -145,6 +168,49 @@ function AdminShell() {
             <div className="page-title">{pageTitle}</div>
           </div>
           <div className="topbar-right">
+            <span
+              className="badge bg-green"
+              title="Online sessions"
+              style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />
+              {online} live
+            </span>
+            <div ref={qaRef} style={{ position: "relative" }}>
+              <button
+                className="tb-btn accent"
+                onClick={() => setQaOpen((o) => !o)}
+                title="Quick actions"
+              >＋ Quick</button>
+              {qaOpen ? (
+                <div
+                  style={{
+                    position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 200,
+                    background: "var(--bg2)", border: "1px solid var(--bd)", borderRadius: 8,
+                    minWidth: 200, padding: 6, boxShadow: "0 10px 30px rgba(0,0,0,.35)",
+                  }}
+                >
+                  {[
+                    { to: "/sell", label: "🛒 New Sale" },
+                    { to: "/vouchers", label: "🎫 New Voucher Batch" },
+                    { to: "/printcenter", label: "🖨️ Print Center" },
+                    { to: "/smscredit", label: "💳 Top up SMS" },
+                    { to: "/clients", label: "👥 Live Clients" },
+                  ].map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setQaOpen(false)}
+                      style={{
+                        display: "block", padding: "8px 10px", borderRadius: 6,
+                        color: "var(--t1)", fontSize: 13, textDecoration: "none",
+                      }}
+                      className="quick-action-item"
+                    >{item.label}</Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <button
               className="theme-btn"
               onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
