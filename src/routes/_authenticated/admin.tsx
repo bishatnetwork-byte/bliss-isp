@@ -11,6 +11,11 @@ import {
   removeTenantMember,
 } from "@/lib/memberships.functions";
 import { getPlatformOverview, listAuditLogs } from "@/lib/platform.functions";
+import {
+  listPlatformGateways,
+  savePlatformGateway,
+  getPlatformSmsRevenue,
+} from "@/lib/platform-gateways.functions";
 import { useAccess } from "@/hooks/useAccess";
 
 const setText = (id: string, v: string | number) => {
