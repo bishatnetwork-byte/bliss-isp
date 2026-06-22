@@ -17,6 +17,7 @@ import {
   getPlatformSmsRevenue,
   getPlatformMikrotikOverview,
 } from "@/lib/platform-gateways.functions";
+import { sendTestSms, sendTestStk } from "@/lib/integration-tests.functions";
 import { useAccess } from "@/hooks/useAccess";
 
 const setText = (id: string, v: string | number) => {
