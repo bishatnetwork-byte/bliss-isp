@@ -24,11 +24,15 @@ function BulkSmsPage() {
   const addC = useServerFn(addContact);
   const saveTpl = useServerFn(saveSmsTemplate);
   const delTpl = useServerFn(deleteSmsTemplate);
+  const listCamp = useServerFn(listSmsCampaigns);
+  const createCamp = useServerFn(createSmsCampaign);
+  const cancelCamp = useServerFn(cancelSmsCampaign);
 
   const { data: wallet } = useQuery({ queryKey: ["wallet"], queryFn: () => w(), refetchInterval: 15000 });
   const { data: contacts } = useQuery({ queryKey: ["contacts"], queryFn: () => c() });
   const { data: templates } = useQuery({ queryKey: ["sms-templates"], queryFn: () => t() });
   const { data: history } = useQuery({ queryKey: ["sms-history"], queryFn: () => h() });
+  const { data: campaigns } = useQuery({ queryKey: ["sms-campaigns"], queryFn: () => listCamp(), refetchInterval: 30000 });
 
   return (
     <MockupPage
