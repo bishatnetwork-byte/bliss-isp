@@ -63,14 +63,19 @@ export const savePortalSettings = createServerFn({ method: "POST" })
   });
 
 // ---- Voucher prefix rules (one row per tenant) ----
+export type PrefixRules = {
+  owner_id: string; online_mode: string;
+  online_custom_prefix: string | null; offline_mode: string;
+  created_at: string; updated_at: string;
+};
 export const getPrefixRules = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await (context.supabase as never as {
-      rpc: (n: string, a: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
-    }).rpc("rpc_ensure_prefix_rules", { _owner: context.userId });
+    const { data, error } = await (context.supabase as unknown as {
+      rpc: <T>(n: string, a: Record<string, unknown>) => Promise<{ data: T | null; error: { message: string } | null }>;
+    }).rpc<PrefixRules>("rpc_ensure_prefix_rules", { _owner: context.userId });
     if (error) throw new Error(error.message);
-    return data;
+    return data as PrefixRules;
   });
 
 export const savePrefixRules = createServerFn({ method: "POST" })
