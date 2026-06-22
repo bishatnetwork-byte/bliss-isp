@@ -15,6 +15,8 @@ export type StkResult =
   | { ok: true; provider_ref: string; raw: unknown }
   | { ok: false; error: string; raw?: unknown };
 
+type GatewayDb = { from: (table: "platform_gateways" | "gateways") => any };
+
 function normalizePhone(phone: string) {
   const d = (phone || "").replace(/\D/g, "");
   if (d.startsWith("0")) return "+256" + d.slice(1);
@@ -38,18 +40,19 @@ export async function initiateMarzpayStk(args: {
   reference: string;
   description?: string;
   callbackUrl: string;
+  db?: GatewayDb;
 }): Promise<StkResult> {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const client = args.db ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
     // Platform-wide MarzPay first.
-    const { data: pg } = await supabaseAdmin
+    const { data: pg } = await client
       .from("platform_gateways")
       .select("enabled,config,secret_encrypted,provider")
       .eq("kind", "payment")
       .maybeSingle();
     let gw = pg as { enabled: boolean; config: Record<string, unknown> | null; secret_encrypted: string | null; provider?: string } | null;
     if (!gw || !gw.enabled || (gw.provider && gw.provider !== "marzpay")) {
-      const { data: tg } = await supabaseAdmin
+      const { data: tg } = await client
         .from("gateways")
         .select("enabled,config,secret_encrypted")
         .eq("owner_id", args.ownerId)
