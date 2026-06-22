@@ -5,6 +5,7 @@ import { MockupPage } from "@/components/MockupPage";
 import html from "@/mockup-pages/bulksms.html?raw";
 import { getWallet } from "@/lib/wallet.functions";
 import { listContacts, listSmsTemplates, listSmsHistory, sendBulkSms, addContact, saveSmsTemplate, deleteSmsTemplate } from "@/lib/sms.functions";
+import { listSmsCampaigns, createSmsCampaign, cancelSmsCampaign } from "@/lib/campaigns.functions";
 import { setText, setHTML, getVal, on, esc, notify } from "@/lib/mockup-dom";
 
 export const Route = createFileRoute("/_authenticated/bulksms")({
