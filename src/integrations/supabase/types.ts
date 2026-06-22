@@ -386,42 +386,66 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          completed_at: string | null
           created_at: string
           currency: string
           customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
           id: string
           invoice_id: string | null
           method: string
+          owner_id: string | null
+          plan_name: string | null
+          provider_ref: string | null
+          purpose: string
           raw_payload: Json | null
           reference: string | null
           status: string
           updated_at: string
+          voucher_id: string | null
         }
         Insert: {
           amount: number
+          completed_at?: string | null
           created_at?: string
           currency?: string
           customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           id?: string
           invoice_id?: string | null
           method?: string
+          owner_id?: string | null
+          plan_name?: string | null
+          provider_ref?: string | null
+          purpose?: string
           raw_payload?: Json | null
           reference?: string | null
           status?: string
           updated_at?: string
+          voucher_id?: string | null
         }
         Update: {
           amount?: number
+          completed_at?: string | null
           created_at?: string
           currency?: string
           customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           id?: string
           invoice_id?: string | null
           method?: string
+          owner_id?: string | null
+          plan_name?: string | null
+          provider_ref?: string | null
+          purpose?: string
           raw_payload?: Json | null
           reference?: string | null
           status?: string
           updated_at?: string
+          voucher_id?: string | null
         }
         Relationships: [
           {
@@ -436,6 +460,13 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
             referencedColumns: ["id"]
           },
         ]
@@ -537,8 +568,14 @@ export type Database = {
           created_at: string
           design: string
           id: string
+          label: string | null
+          last_printed_at: string | null
           owner_id: string
           per_page: number
+          plan_id: string | null
+          plan_name: string | null
+          printed_count: number
+          qty: number
           size_preset: string
         }
         Insert: {
@@ -547,8 +584,14 @@ export type Database = {
           created_at?: string
           design?: string
           id?: string
+          label?: string | null
+          last_printed_at?: string | null
           owner_id: string
           per_page?: number
+          plan_id?: string | null
+          plan_name?: string | null
+          printed_count?: number
+          qty?: number
           size_preset?: string
         }
         Update: {
@@ -557,8 +600,14 @@ export type Database = {
           created_at?: string
           design?: string
           id?: string
+          label?: string | null
+          last_printed_at?: string | null
           owner_id?: string
           per_page?: number
+          plan_id?: string | null
+          plan_name?: string | null
+          printed_count?: number
+          qty?: number
           size_preset?: string
         }
         Relationships: [
@@ -567,6 +616,13 @@ export type Database = {
             columns: ["batch_id"]
             isOneToOne: false
             referencedRelation: "voucher_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_batches_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
             referencedColumns: ["id"]
           },
         ]
@@ -992,79 +1048,92 @@ export type Database = {
       voucher_prefix_rules: {
         Row: {
           created_at: string
-          enabled: boolean
-          id: string
+          offline_mode: string
+          online_custom_prefix: string | null
+          online_mode: string
           owner_id: string
-          plan_id: string | null
-          prefix: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
-          enabled?: boolean
-          id?: string
+          offline_mode?: string
+          online_custom_prefix?: string | null
+          online_mode?: string
           owner_id: string
-          plan_id?: string | null
-          prefix: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
-          enabled?: boolean
-          id?: string
+          offline_mode?: string
+          online_custom_prefix?: string | null
+          online_mode?: string
           owner_id?: string
-          plan_id?: string | null
-          prefix?: string
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "voucher_prefix_rules_plan_id_fkey"
-            columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "plans"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       vouchers: {
         Row: {
+          activated_at: string | null
           batch_id: string | null
           code: string
           created_at: string
           created_by: string | null
+          customer_name: string | null
+          customer_phone: string | null
           deleted_at: string | null
           expires_at: string | null
           id: string
+          ip_address: string | null
+          mac_address: string | null
+          owner_id: string
           plan_id: string | null
           router_id: string | null
+          source: string
           status: string
           updated_at: string
           used_at: string | null
           used_by_customer_id: string | null
         }
         Insert: {
+          activated_at?: string | null
           batch_id?: string | null
           code: string
           created_at?: string
           created_by?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           deleted_at?: string | null
           expires_at?: string | null
           id?: string
+          ip_address?: string | null
+          mac_address?: string | null
+          owner_id: string
           plan_id?: string | null
           router_id?: string | null
+          source?: string
           status?: string
           updated_at?: string
           used_at?: string | null
           used_by_customer_id?: string | null
         }
         Update: {
+          activated_at?: string | null
           batch_id?: string | null
           code?: string
           created_at?: string
           created_by?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           deleted_at?: string | null
           expires_at?: string | null
           id?: string
+          ip_address?: string | null
+          mac_address?: string | null
+          owner_id?: string
           plan_id?: string | null
           router_id?: string | null
+          source?: string
           status?: string
           updated_at?: string
           used_at?: string | null
@@ -1207,24 +1276,151 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      plan_expiry: { Args: { _minutes: number }; Returns: string }
       rpc_complete_voucher_payment: {
         Args: { _payment_id: string; _provider_ref?: string }
         Returns: {
           amount: number
+          completed_at: string | null
           created_at: string
           currency: string
           customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
           id: string
           invoice_id: string | null
           method: string
+          owner_id: string | null
+          plan_name: string | null
+          provider_ref: string | null
+          purpose: string
           raw_payload: Json | null
           reference: string | null
           status: string
           updated_at: string
+          voucher_id: string | null
         }
         SetofOptions: {
           from: "*"
           to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rpc_connect_voucher: {
+        Args: { _code: string; _ip?: string; _mac?: string }
+        Returns: {
+          activated_at: string | null
+          batch_id: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          deleted_at: string | null
+          expires_at: string | null
+          id: string
+          ip_address: string | null
+          mac_address: string | null
+          owner_id: string
+          plan_id: string | null
+          router_id: string | null
+          source: string
+          status: string
+          updated_at: string
+          used_at: string | null
+          used_by_customer_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "vouchers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rpc_create_voucher_batch: {
+        Args: { _label?: string; _plan_id: string; _quantity: number }
+        Returns: Json
+      }
+      rpc_create_voucher_single: {
+        Args: {
+          _customer_name: string
+          _customer_phone: string
+          _is_paid?: boolean
+          _plan_id: string
+        }
+        Returns: {
+          activated_at: string | null
+          batch_id: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          deleted_at: string | null
+          expires_at: string | null
+          id: string
+          ip_address: string | null
+          mac_address: string | null
+          owner_id: string
+          plan_id: string | null
+          router_id: string | null
+          source: string
+          status: string
+          updated_at: string
+          used_at: string | null
+          used_by_customer_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "vouchers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rpc_empty_voucher_bin: { Args: never; Returns: number }
+      rpc_ensure_prefix_rules: {
+        Args: { _owner: string }
+        Returns: {
+          created_at: string
+          offline_mode: string
+          online_custom_prefix: string | null
+          online_mode: string
+          owner_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "voucher_prefix_rules"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rpc_generate_voucher_code: {
+        Args: { _owner: string; _phone?: string; _source: string }
+        Returns: string
+      }
+      rpc_mark_batch_printed: {
+        Args: { _batch_id: string; _count: number }
+        Returns: {
+          batch_id: string | null
+          count: number
+          created_at: string
+          design: string
+          id: string
+          label: string | null
+          last_printed_at: string | null
+          owner_id: string
+          per_page: number
+          plan_id: string | null
+          plan_name: string | null
+          printed_count: number
+          qty: number
+          size_preset: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "print_batches"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1265,11 +1461,75 @@ export type Database = {
         }
       }
       rpc_reserve_sms_credits: { Args: { _n: number }; Returns: number }
+      rpc_restore_voucher: {
+        Args: { _code: string }
+        Returns: {
+          activated_at: string | null
+          batch_id: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          deleted_at: string | null
+          expires_at: string | null
+          id: string
+          ip_address: string | null
+          mac_address: string | null
+          owner_id: string
+          plan_id: string | null
+          router_id: string | null
+          source: string
+          status: string
+          updated_at: string
+          used_at: string | null
+          used_by_customer_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "vouchers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      rpc_revoke_voucher: {
+        Args: { _code: string }
+        Returns: {
+          activated_at: string | null
+          batch_id: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          deleted_at: string | null
+          expires_at: string | null
+          id: string
+          ip_address: string | null
+          mac_address: string | null
+          owner_id: string
+          plan_id: string | null
+          router_id: string | null
+          source: string
+          status: string
+          updated_at: string
+          used_at: string | null
+          used_by_customer_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "vouchers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       rpc_set_withdraw_passcode: {
         Args: { _passcode: string }
         Returns: undefined
       }
+      rpc_soft_delete_voucher: { Args: { _code: string }; Returns: undefined }
       rpc_transfer_wallet_to_sms: { Args: { _amount: number }; Returns: Json }
+      voucher_random_suffix: { Args: { _len?: number }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "operator" | "viewer"

@@ -12,8 +12,8 @@ export const Route = createFileRoute("/_authenticated/vouchers")({ component: Vo
 type Voucher = {
   id: string; code: string; status: string;
   created_at: string; expires_at: string | null; used_at: string | null;
+  customer_name: string | null; customer_phone: string | null;
   plans: { name: string; price: number; currency: string; duration_minutes: number } | null;
-  customers: { full_name: string; phone: string | null } | null;
 };
 
 function VouchersPage() {
@@ -75,7 +75,7 @@ function VouchersPage() {
           const qty = isBatch ? parseInt(getVal(root, "bv-qty") || "0", 10) : 1;
           if (qty < 1) return notify("Invalid quantity", "warning");
           try {
-            const res = await genFn({ data: { plan_id: planId, quantity: qty, length: 8, batch_name: `Batch ${new Date().toLocaleString()}`, expires_in_days: 0 } });
+            const res = await genFn({ data: { plan_id: planId, quantity: qty, label: `Batch ${new Date().toLocaleString()}` } });
             notify(`Generated ${res.count} voucher${res.count !== 1 ? "s" : ""}`, "success");
             qc.invalidateQueries({ queryKey: ["vouchers"] });
           } catch (e) {
@@ -91,7 +91,7 @@ function VouchersPage() {
           if (curFilter !== "all" && v.status !== curFilter) return false;
           if (!curSearch) return true;
           const q = curSearch.toLowerCase();
-          return v.code.toLowerCase().includes(q) || (v.customers?.phone ?? "").includes(q);
+          return v.code.toLowerCase().includes(q) || (v.customer_phone ?? "").includes(q);
         };
 
         const render = () => {
@@ -111,11 +111,11 @@ function VouchersPage() {
           const list = all.filter(matches);
           setHTML(root, "vtbody", list.length ? list.map(v => {
             const badge = v.status === "active" ? "bg-green" : v.status === "paid" ? "bg-blue" : v.status === "expired" ? "bg-red" : v.status === "revoked" ? "bg-gray" : "bg-yellow";
-            return `<tr data-id="${v.id}">
+            return `<tr data-id="${v.id}" data-code="${esc(v.code)}">
               <td><input type="checkbox" class="vchk"/></td>
               <td class="mono" style="font-weight:700">${esc(v.code)}</td>
-              <td>${esc(v.customers?.full_name ?? "—")}</td>
-              <td>${esc(v.customers?.phone ?? "—")}</td>
+              <td>${esc(v.customer_name ?? "—")}</td>
+              <td>${esc(v.customer_phone ?? "—")}</td>
               <td>${esc(v.plans?.name ?? "—")}</td>
               <td>${v.plans ? fmt(Number(v.plans.price), v.plans.currency) : "—"}</td>
               <td><span class="badge ${badge}">${esc(v.status)}</span></td>
@@ -146,16 +146,16 @@ function VouchersPage() {
           const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-act]");
           if (!btn) return;
           const tr = btn.closest<HTMLElement>("tr[data-id]");
-          const id = tr?.dataset.id;
-          if (!id) return;
+          const code = tr?.dataset.code;
+          if (!code) return;
           try {
             if (btn.dataset.act === "revoke") {
               if (!confirm("Revoke this voucher?")) return;
-              await revokeFn({ data: { id } });
+              await revokeFn({ data: { code } });
               notify("Revoked", "success");
             } else if (btn.dataset.act === "delete") {
               if (!confirm("Move this voucher to the recycle bin?")) return;
-              await delFn({ data: { id } });
+              await delFn({ data: { code } });
               notify("Moved to bin", "success");
             }
             qc.invalidateQueries({ queryKey: ["vouchers"] });
