@@ -10,6 +10,7 @@ import {
   updateTenantMember,
   removeTenantMember,
 } from "@/lib/memberships.functions";
+import { getPlatformOverview, listAuditLogs } from "@/lib/platform.functions";
 import { useAccess } from "@/hooks/useAccess";
 
 export const Route = createFileRoute("/_authenticated/admin")({
