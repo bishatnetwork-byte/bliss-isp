@@ -7,13 +7,16 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const sendTestSms = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    phone: z.string().min(3).max(40),
-    body: z.string().min(1).max(320).default("HotspotPro test ✅"),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        phone: z.string().min(3).max(40),
+        body: z.string().min(1).max(320).default("HotspotPro test ✅"),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
-    const { data: isStaff } = await context.supabase
-      .rpc("is_staff", { _user_id: context.userId });
+    const { data: isStaff } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
     if (!isStaff) throw new Error("forbidden");
     const { dispatchSms } = await import("@/lib/sms-dispatch.server");
     const res = await dispatchSms(context.userId, data.phone, data.body, context.supabase as never);
@@ -22,13 +25,16 @@ export const sendTestSms = createServerFn({ method: "POST" })
 
 export const sendTestStk = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    phone: z.string().min(3).max(40),
-    amount: z.number().int().min(500).max(50000).default(500),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        phone: z.string().min(3).max(40),
+        amount: z.number().int().min(500).max(50000).default(500),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
-    const { data: isStaff } = await context.supabase
-      .rpc("is_staff", { _user_id: context.userId });
+    const { data: isStaff } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
     if (!isStaff) throw new Error("forbidden");
     const { initiateMarzpayStk } = await import("@/lib/marzpay.server");
     const req = getRequest();
@@ -43,6 +49,17 @@ export const sendTestStk = createServerFn({ method: "POST" })
       callbackUrl: `${origin}/api/public/webhooks/marzpay`,
       db: context.supabase as never,
     });
-    if (res.ok) return { reference, ok: true as const, provider_ref: res.provider_ref, raw: JSON.stringify(res.raw).slice(0, 500) };
-    return { reference, ok: false as const, error: res.error, raw: res.raw ? JSON.stringify(res.raw).slice(0, 500) : null };
+    if (res.ok)
+      return {
+        reference,
+        ok: true as const,
+        provider_ref: res.provider_ref,
+        raw: JSON.stringify(res.raw).slice(0, 500),
+      };
+    return {
+      reference,
+      ok: false as const,
+      error: res.error,
+      raw: res.raw ? JSON.stringify(res.raw).slice(0, 500) : null,
+    };
   });

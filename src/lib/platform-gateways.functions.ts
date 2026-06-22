@@ -21,27 +21,38 @@ export const listPlatformGateways = createServerFn({ method: "GET" })
       .select("id,kind,provider,enabled,config,secret_encrypted,updated_at");
     if (error) throw new Error(error.message);
     return (data ?? []).map((g) => ({
-      id: g.id, kind: g.kind, provider: g.provider, enabled: g.enabled,
-      config: g.config, has_secret: !!g.secret_encrypted, updated_at: g.updated_at,
+      id: g.id,
+      kind: g.kind,
+      provider: g.provider,
+      enabled: g.enabled,
+      config: g.config,
+      has_secret: !!g.secret_encrypted,
+      updated_at: g.updated_at,
     }));
   });
 
 export const savePlatformGateway = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      kind: z.enum(KINDS),
-      provider: z.string().min(1).max(60),
-      enabled: z.boolean().default(false),
-      config: z.record(z.string(), z.unknown()).default({}),
-      secret: z.string().max(2000).optional().nullable(),
-    }).parse(d),
+    z
+      .object({
+        kind: z.enum(KINDS),
+        provider: z.string().min(1).max(60),
+        enabled: z.boolean().default(false),
+        config: z.record(z.string(), z.unknown()).default({}),
+        secret: z.string().max(2000).optional().nullable(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const update: Record<string, unknown> = {
-      kind: data.kind, provider: data.provider, enabled: data.enabled,
-      config: data.config, updated_by: context.userId, updated_at: new Date().toISOString(),
+      kind: data.kind,
+      provider: data.provider,
+      enabled: data.enabled,
+      config: data.config,
+      updated_by: context.userId,
+      updated_at: new Date().toISOString(),
     };
     if (data.secret) {
       const { encryptSecret } = await import("@/lib/crypto.server");
