@@ -75,7 +75,7 @@ function VouchersPage() {
           const qty = isBatch ? parseInt(getVal(root, "bv-qty") || "0", 10) : 1;
           if (qty < 1) return notify("Invalid quantity", "warning");
           try {
-            const res = await genFn({ data: { plan_id: planId, quantity: qty, length: 8, batch_name: `Batch ${new Date().toLocaleString()}`, expires_in_days: 0 } });
+            const res = await genFn({ data: { plan_id: planId, quantity: qty, label: `Batch ${new Date().toLocaleString()}` } });
             notify(`Generated ${res.count} voucher${res.count !== 1 ? "s" : ""}`, "success");
             qc.invalidateQueries({ queryKey: ["vouchers"] });
           } catch (e) {
