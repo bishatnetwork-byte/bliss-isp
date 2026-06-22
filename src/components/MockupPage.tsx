@@ -32,6 +32,7 @@ export function MockupPage({
     <div
       ref={ref}
       className="page active"
+      data-mockup-page=""
       // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: html }}
     />
