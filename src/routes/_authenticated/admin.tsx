@@ -642,3 +642,57 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
     </div>
   );
 }
+
+function MikrotikOverviewCard() {
+  const { data: access } = useAccess();
+  const fn = useServerFn(getPlatformMikrotikOverview);
+  const q = useQuery({
+    queryKey: ["platform-mikrotik-overview"],
+    queryFn: () => fn(),
+    enabled: !!access?.isPlatformAdmin,
+    refetchInterval: 60_000,
+  });
+  if (!access?.isPlatformAdmin) return null;
+  return (
+    <div className="card" data-admin-extra="mikrotik" style={{ marginTop: 16 }}>
+      <div className="card-hd">
+        <span className="card-title">📡 MikroTik Overview (all tenants)</span>
+        <span className="badge bg-purple">Platform Admin</span>
+      </div>
+      <div className="card-body">
+        <div className="g2" style={{ gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+          <Stat label="Total Routers" value={(q.data?.totals.total ?? 0).toLocaleString()} color="var(--blue)" />
+          <Stat label="Online" value={(q.data?.totals.online ?? 0).toLocaleString()} color="var(--green)" />
+          <Stat label="Offline / Error" value={(q.data?.totals.offline ?? 0).toLocaleString()} color="var(--red)" />
+          <Stat label="Unknown" value={(q.data?.totals.unknown ?? 0).toLocaleString()} color="var(--t3)" />
+        </div>
+        <div className="tbl-wrap" style={{ marginTop: 12, maxHeight: 320, overflowY: "auto" }}>
+          <table>
+            <thead><tr><th>Name</th><th>Host</th><th>Status</th><th>Last Seen</th><th>Tenant</th></tr></thead>
+            <tbody>
+              {q.isLoading ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 14, color: "var(--t3)" }}>Loading…</td></tr>
+              ) : (q.data?.rows.length ?? 0) === 0 ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 14, color: "var(--t3)" }}>No routers registered yet</td></tr>
+              ) : (
+                q.data!.rows.map((r) => {
+                  const s = (r.status ?? "unknown").toString().toLowerCase();
+                  const badge = s === "online" || s === "connected" ? "bg-green" : s === "error" || s === "offline" ? "bg-red" : "bg-blue";
+                  return (
+                    <tr key={r.id as string}>
+                      <td><b>{(r.name as string) || "—"}</b></td>
+                      <td className="mono" style={{ fontSize: 11 }}>{(r.host as string) || "—"}</td>
+                      <td><span className={`badge ${badge}`}>{r.status ?? "unknown"}</span></td>
+                      <td style={{ fontSize: 11, color: "var(--t3)" }}>{r.last_seen ? new Date(r.last_seen as string).toLocaleString() : "—"}</td>
+                      <td className="mono" style={{ fontSize: 11 }}>{(r.owner_id as string)?.slice(0, 8) ?? "—"}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
