@@ -124,44 +124,55 @@ function calcParts(body: string) {
 export const sendBulkSms = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
-    recipients: z.array(z.object({ phone: z.string().min(3), name: z.string().optional().nullable() })).min(1).max(500),
+    recipients: z.array(z.object({
+      phone: z.string().min(3),
+      name: z.string().optional().nullable(),
+      vars: z.record(z.string(), z.string()).optional(),
+    })).min(1).max(500),
     body: z.string().min(1).max(1000),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const parts = calcParts(data.body);
-    const cost = parts * data.recipients.length;
+    // Per-recipient merge — parts can vary, so we estimate worst-case parts
+    // up-front to reserve, then refund the difference at the end.
+    const { mergePlaceholders, dispatchSms } = await import("@/lib/sms-dispatch.server");
+    const { data: biz } = await context.supabase
+      .from("business_settings").select("name").eq("owner_id", context.userId).maybeSingle();
+    const businessName = (biz?.name as string) ?? "";
 
-    // 1) RESERVE credits atomically — closes the double-spend race two concurrent
-    //    sends could otherwise both pass.
-    const { error: reserveErr } = await context.supabase.rpc("rpc_reserve_sms_credits", { _n: cost });
+    const rendered = data.recipients.map(r => {
+      const text = mergePlaceholders(data.body, {
+        name: r.name ?? "", phone: r.phone, business: businessName, ...(r.vars ?? {}),
+      });
+      return { phone: r.phone, name: r.name ?? null, text, parts: calcParts(text) };
+    });
+    const reservedParts = rendered.reduce((s, r) => s + r.parts, 0);
+
+    const { error: reserveErr } = await context.supabase.rpc("rpc_reserve_sms_credits", { _n: reservedParts });
     if (reserveErr) throw new Error(reserveErr.message);
 
-    // 2) Dispatch (placeholder until a provider gateway is wired). Any failure
-    //    refunds individually; every attempt logs a row, success or failure.
-    const results: { phone: string; status: "delivered" | "failed"; reason?: string }[] = [];
+    const results: { phone: string; status: "delivered" | "failed"; reason?: string; provider_ref?: string }[] = [];
     let refundParts = 0;
     type SmsLogRow = {
       owner_id: string; phone: string; name: string | null; body: string;
-      parts: number; status: string; kind: string; error?: string;
+      parts: number; status: string; kind: string; error?: string; provider_ref?: string;
     };
     const logs: SmsLogRow[] = [];
 
-    for (const r of data.recipients) {
-      try {
-        // Real provider call would go here.
+    for (const r of rendered) {
+      const res = await dispatchSms(context.userId, r.phone, r.text);
+      if (res.status === "sent") {
         logs.push({
-          owner_id: context.userId, phone: r.phone, name: r.name ?? null,
-          body: data.body, parts, status: "sent", kind: "bulk",
+          owner_id: context.userId, phone: r.phone, name: r.name,
+          body: r.text, parts: r.parts, status: "sent", kind: "bulk", provider_ref: res.provider_ref,
         });
-        results.push({ phone: r.phone, status: "delivered" });
-      } catch (e: unknown) {
-        const reason = e instanceof Error ? e.message.slice(0, 200) : "send_failed";
+        results.push({ phone: r.phone, status: "delivered", provider_ref: res.provider_ref });
+      } else {
         logs.push({
-          owner_id: context.userId, phone: r.phone, name: r.name ?? null,
-          body: data.body, parts, status: "failed", error: reason, kind: "bulk",
+          owner_id: context.userId, phone: r.phone, name: r.name,
+          body: r.text, parts: r.parts, status: "failed", error: res.error ?? "send_failed", kind: "bulk",
         });
-        refundParts += parts;
-        results.push({ phone: r.phone, status: "failed", reason });
+        refundParts += r.parts;
+        results.push({ phone: r.phone, status: "failed", reason: res.error });
       }
     }
 
