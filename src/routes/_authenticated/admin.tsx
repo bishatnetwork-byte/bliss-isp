@@ -15,6 +15,7 @@ import {
   listPlatformGateways,
   savePlatformGateway,
   getPlatformSmsRevenue,
+  getPlatformMikrotikOverview,
 } from "@/lib/platform-gateways.functions";
 import { useAccess } from "@/hooks/useAccess";
 
@@ -81,6 +82,49 @@ function AdminPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("staff");
   const [editing, setEditing] = useState<{ memberId: string; name: string; tabs: string[] } | null>(null);
+  const [section, setSection] = useState<"all" | "users" | "gateways" | "fees" | "mikrotik">("all");
+
+  // Tag mockup cards into sections so the dropdown can filter them.
+  useEffect(() => {
+    const root = document.querySelector("[data-mockup-page]") as HTMLElement | null;
+    if (!root) return;
+    const map: Record<string, string> = {
+      "platform users": "users",
+      "email gateway": "gateways",
+      "domain provider": "gateways",
+      "chr mikrotik": "mikrotik",
+      "remote access": "mikrotik",
+      "winbox": "mikrotik",
+      "platform fee rates": "fees",
+      "withdraw platform fees": "fees",
+      "fee withdrawal history": "fees",
+      "fee breakdown log": "fees",
+      "billing system wallet": "fees",
+      "voucher prefix": "fees",
+    };
+    const cards = root.querySelectorAll<HTMLElement>(".card");
+    cards.forEach((c) => {
+      const title = (c.querySelector(".card-title")?.textContent ?? "").toLowerCase();
+      let tag = "fees";
+      for (const k in map) if (title.includes(k)) { tag = map[k]; break; }
+      c.setAttribute("data-admin-section", tag);
+    });
+    const feeStats = document.getElementById("ad-fee-stats");
+    if (feeStats) feeStats.setAttribute("data-admin-section", "fees");
+  }, []);
+
+  // Apply section filter
+  useEffect(() => {
+    const root = document.querySelector("[data-mockup-page]") as HTMLElement | null;
+    document.querySelectorAll<HTMLElement>("[data-admin-section]").forEach((el) => {
+      el.style.display = section === "all" || el.getAttribute("data-admin-section") === section ? "" : "none";
+    });
+    document.querySelectorAll<HTMLElement>("[data-admin-extra]").forEach((el) => {
+      const tag = el.getAttribute("data-admin-extra")!;
+      el.style.display = section === "all" || tag === section ? "" : "none";
+    });
+    void root;
+  }, [section, members.data, overview.data]);
 
   const canManage =
     access?.isPlatformAdmin || access?.tenantRole === "owner" || access?.tenantRole === "admin";
@@ -215,9 +259,30 @@ function AdminPage() {
 
   return (
     <>
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div className="card-body" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <label className="fl" style={{ margin: 0, fontWeight: 700 }}>📂 Admin Section</label>
+          <select
+            className="fc"
+            style={{ maxWidth: 280 }}
+            value={section}
+            onChange={(e) => setSection(e.target.value as typeof section)}
+          >
+            <option value="all">All sections</option>
+            <option value="users">👥 Users</option>
+            <option value="gateways">🔌 Gateways</option>
+            <option value="fees">💰 Platform Fees</option>
+            <option value="mikrotik">📡 MikroTik Overview</option>
+          </select>
+          <span className="badge bg-blue" style={{ marginLeft: "auto" }}>
+            {section === "all" ? "Showing everything" : `Filtered: ${section}`}
+          </span>
+        </div>
+      </div>
       <MockupPage title="Admin Panel" html={html} />
       {canManage ? (
-        <div className="card" style={{ marginTop: 16 }}>
+        <div className="card" data-admin-extra="users" style={{ marginTop: 16 }}>
+
           <div className="card-hd"><span className="card-title">✉️ Invite Team Member</span></div>
           <div className="card-body">
             <div className="fg c2">
@@ -278,9 +343,11 @@ function AdminPage() {
           saving={update.isPending}
         />
       ) : null}
-      {access?.isPlatformAdmin ? <PlatformGatewaysCard /> : null}
-      {access?.isPlatformAdmin ? <PlatformSmsRevenueCard /> : null}
-      <div className="card" style={{ marginTop: 16 }}>
+      {access?.isPlatformAdmin ? <div data-admin-extra="gateways"><PlatformGatewaysCard /></div> : null}
+      {access?.isPlatformAdmin ? <div data-admin-extra="fees"><PlatformSmsRevenueCard /></div> : null}
+      <MikrotikOverviewCard />
+      <div className="card" data-admin-extra="fees" style={{ marginTop: 16 }}>
+
         <div className="card-hd">
           <span className="card-title">📜 Activity Log</span>
           <span className="badge bg-blue">{audit.data?.length ?? 0} events</span>
@@ -571,6 +638,60 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
       <div className="card-body" style={{ padding: 14 }}>
         <div style={{ fontSize: 11, color: "var(--t3)", textTransform: "uppercase", letterSpacing: ".06em", fontWeight: 700 }}>{label}</div>
         <div style={{ fontSize: 22, fontWeight: 800, color, marginTop: 4 }}>{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function MikrotikOverviewCard() {
+  const { data: access } = useAccess();
+  const fn = useServerFn(getPlatformMikrotikOverview);
+  const q = useQuery({
+    queryKey: ["platform-mikrotik-overview"],
+    queryFn: () => fn(),
+    enabled: !!access?.isPlatformAdmin,
+    refetchInterval: 60_000,
+  });
+  if (!access?.isPlatformAdmin) return null;
+  return (
+    <div className="card" data-admin-extra="mikrotik" style={{ marginTop: 16 }}>
+      <div className="card-hd">
+        <span className="card-title">📡 MikroTik Overview (all tenants)</span>
+        <span className="badge bg-purple">Platform Admin</span>
+      </div>
+      <div className="card-body">
+        <div className="g2" style={{ gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+          <Stat label="Total Routers" value={(q.data?.totals.total ?? 0).toLocaleString()} color="var(--blue)" />
+          <Stat label="Online" value={(q.data?.totals.online ?? 0).toLocaleString()} color="var(--green)" />
+          <Stat label="Offline / Error" value={(q.data?.totals.offline ?? 0).toLocaleString()} color="var(--red)" />
+          <Stat label="Unknown" value={(q.data?.totals.unknown ?? 0).toLocaleString()} color="var(--t3)" />
+        </div>
+        <div className="tbl-wrap" style={{ marginTop: 12, maxHeight: 320, overflowY: "auto" }}>
+          <table>
+            <thead><tr><th>Name</th><th>Host</th><th>Status</th><th>Last Seen</th><th>Tenant</th></tr></thead>
+            <tbody>
+              {q.isLoading ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 14, color: "var(--t3)" }}>Loading…</td></tr>
+              ) : (q.data?.rows.length ?? 0) === 0 ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 14, color: "var(--t3)" }}>No routers registered yet</td></tr>
+              ) : (
+                q.data!.rows.map((r) => {
+                  const s = (r.status ?? "unknown").toString().toLowerCase();
+                  const badge = s === "online" || s === "connected" ? "bg-green" : s === "error" || s === "offline" ? "bg-red" : "bg-blue";
+                  return (
+                    <tr key={r.id as string}>
+                      <td><b>{(r.name as string) || "—"}</b></td>
+                      <td className="mono" style={{ fontSize: 11 }}>{(r.host as string) || "—"}</td>
+                      <td><span className={`badge ${badge}`}>{r.status ?? "unknown"}</span></td>
+                      <td style={{ fontSize: 11, color: "var(--t3)" }}>{r.last_seen ? new Date(r.last_seen as string).toLocaleString() : "—"}</td>
+                      <td className="mono" style={{ fontSize: 11 }}>{(r.owner_id as string)?.slice(0, 8) ?? "—"}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

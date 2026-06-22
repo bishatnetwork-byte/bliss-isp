@@ -81,3 +81,30 @@ export const getPlatformSmsRevenue = createServerFn({ method: "GET" })
     );
     return { totals, rows };
   });
+
+/** Platform-wide MikroTik router overview — admin only. */
+export const getPlatformMikrotikOverview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("routers")
+      .select("id,name,host,status,last_seen,owner_id,created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    const rows = data ?? [];
+    const totals = rows.reduce(
+      (acc, r) => {
+        acc.total += 1;
+        const s = (r.status ?? "").toString().toLowerCase();
+        if (s === "online" || s === "connected") acc.online += 1;
+        else if (s === "error" || s === "offline") acc.offline += 1;
+        else acc.unknown += 1;
+        return acc;
+      },
+      { total: 0, online: 0, offline: 0, unknown: 0 },
+    );
+    return { totals, rows };
+  });
