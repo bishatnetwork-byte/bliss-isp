@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { MockupPage } from "@/components/MockupPage";
 import html from "@/mockup-pages/mikrotiks.html?raw";
 import { listRouters, upsertRouter, deleteRouter, testRouter } from "@/lib/routers.functions";
+import { probeAllRouters } from "@/lib/router-health.functions";
 import { setHTML, esc, notify } from "@/lib/mockup-dom";
 
 export const Route = createFileRoute("/_authenticated/mikrotiks")({ component: MikrotiksPage });
