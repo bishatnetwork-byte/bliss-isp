@@ -35,6 +35,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as ApiPublicConnectRouteImport } from './routes/api/public/connect'
 import { Route as ApiPublicWebhooksMpesaRouteImport } from './routes/api/public/webhooks/mpesa'
 import { Route as ApiPublicWebhooksMarzpayRouteImport } from './routes/api/public/webhooks/marzpay'
+import { Route as ApiPublicSessionsEventRouteImport } from './routes/api/public/sessions/event'
 import { Route as ApiPublicCronPurgeVouchersRouteImport } from './routes/api/public/cron/purge-vouchers'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -168,6 +169,11 @@ const ApiPublicWebhooksMarzpayRoute =
     path: '/api/public/webhooks/marzpay',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSessionsEventRoute = ApiPublicSessionsEventRouteImport.update({
+  id: '/api/public/sessions/event',
+  path: '/api/public/sessions/event',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronPurgeVouchersRoute =
   ApiPublicCronPurgeVouchersRouteImport.update({
     id: '/api/public/cron/purge-vouchers',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
+  '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
+  '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
@@ -258,6 +266,7 @@ export interface FileRoutesById {
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
+  '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/p/$tenant'
     | '/api/public/connect'
     | '/api/public/cron/purge-vouchers'
+    | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   fileRoutesByTo: FileRoutesByTo
@@ -316,6 +326,7 @@ export interface FileRouteTypes {
     | '/p/$tenant'
     | '/api/public/connect'
     | '/api/public/cron/purge-vouchers'
+    | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   id:
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/p/$tenant'
     | '/api/public/connect'
     | '/api/public/cron/purge-vouchers'
+    | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
     | '/api/public/webhooks/mpesa'
   fileRoutesById: FileRoutesById
@@ -357,6 +369,7 @@ export interface RootRouteChildren {
   PTenantRoute: typeof PTenantRoute
   ApiPublicConnectRoute: typeof ApiPublicConnectRoute
   ApiPublicCronPurgeVouchersRoute: typeof ApiPublicCronPurgeVouchersRoute
+  ApiPublicSessionsEventRoute: typeof ApiPublicSessionsEventRoute
   ApiPublicWebhooksMarzpayRoute: typeof ApiPublicWebhooksMarzpayRoute
   ApiPublicWebhooksMpesaRoute: typeof ApiPublicWebhooksMpesaRoute
 }
@@ -545,6 +558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksMarzpayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sessions/event': {
+      id: '/api/public/sessions/event'
+      path: '/api/public/sessions/event'
+      fullPath: '/api/public/sessions/event'
+      preLoaderRoute: typeof ApiPublicSessionsEventRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/purge-vouchers': {
       id: '/api/public/cron/purge-vouchers'
       path: '/api/public/cron/purge-vouchers'
@@ -608,6 +628,7 @@ const rootRouteChildren: RootRouteChildren = {
   PTenantRoute: PTenantRoute,
   ApiPublicConnectRoute: ApiPublicConnectRoute,
   ApiPublicCronPurgeVouchersRoute: ApiPublicCronPurgeVouchersRoute,
+  ApiPublicSessionsEventRoute: ApiPublicSessionsEventRoute,
   ApiPublicWebhooksMarzpayRoute: ApiPublicWebhooksMarzpayRoute,
   ApiPublicWebhooksMpesaRoute: ApiPublicWebhooksMpesaRoute,
 }
