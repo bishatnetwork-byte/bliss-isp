@@ -26,7 +26,7 @@ APP_PORT="${APP_PORT:-3001}"            # bliss-isp serves on 80/443 static; we 
 DOMAIN="${DOMAIN:-}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-admin@bliss-isp.com}"
 GITHUB_REPO="${GITHUB_REPO:-}"
-NODE_MAJOR="${NODE_MAJOR:-20}"
+NODE_MAJOR="${NODE_MAJOR:-22}"   # Node 22+ required: supabase-js Realtime needs native WebSocket
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 log()  { echo -e "${GREEN}[hotspotpro]${NC} $*"; }
