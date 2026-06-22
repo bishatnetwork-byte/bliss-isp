@@ -104,42 +104,48 @@ function AdminPage() {
       { key: "billing system wallet", tag: "fees" },
       { key: "voucher prefix", tag: "fees" },
     ];
-    const tagFor = (el: HTMLElement): string => {
+    const tagsIn = (el: HTMLElement): Set<string> => {
+      const tags = new Set<string>();
       const titles = Array.from(el.querySelectorAll(".card-title"))
         .map((t) => (t.textContent ?? "").toLowerCase());
-      const tags = new Set<string>();
       for (const t of titles) {
         for (const m of titleMap) if (t.includes(m.key)) { tags.add(m.tag); break; }
       }
-      if (tags.size === 1) return [...tags][0];
-      if (tags.size > 1) return "mixed";
-      return "fees"; // default bucket for untitled blocks (wallet header, alerts, sep)
+      return tags;
+    };
+    const tagDeep = (el: HTMLElement, inheritedTag?: string): void => {
+      const tags = tagsIn(el);
+      if (tags.size === 1) {
+        el.setAttribute("data-admin-section", [...tags][0]);
+        return;
+      }
+      if (tags.size === 0) {
+        el.setAttribute("data-admin-section", inheritedTag ?? "fees");
+        return;
+      }
+      // mixed — descend into element children
+      el.setAttribute("data-admin-mixed", "1");
+      Array.from(el.children).forEach((c) => tagDeep(c as HTMLElement));
     };
 
-    // Tag every direct child of the mockup root.
-    Array.from(root.children).forEach((child) => {
-      const el = child as HTMLElement;
-      const tag = tagFor(el);
-      if (tag === "mixed") {
-        // Descend into columns of mixed .g2 grids.
-        Array.from(el.children).forEach((col) => {
-          const c = col as HTMLElement;
-          c.setAttribute("data-admin-section", tagFor(c));
-        });
-        el.setAttribute("data-admin-mixed", "1");
-      } else {
-        el.setAttribute("data-admin-section", tag);
-      }
-    });
+    Array.from(root.children).forEach((child) => tagDeep(child as HTMLElement));
 
     // Special-case ids/classes.
     const feeStats = document.getElementById("ad-fee-stats");
     if (feeStats) feeStats.setAttribute("data-admin-section", "fees");
     const wallet = root.querySelector<HTMLElement>(".platform-wallet-card");
     if (wallet) wallet.setAttribute("data-admin-section", "fees");
-    // Integrations heading + intro alert belong to gateways.
+    // "🔌 Platform Integrations" heading + its intro alert belong to gateways.
+    Array.from(root.children).forEach((c) => {
+      const el = c as HTMLElement;
+      const txt = (el.textContent ?? "").toLowerCase();
+      if (txt.includes("platform integrations") && el.tagName === "DIV" && !el.classList.contains("card")) {
+        el.setAttribute("data-admin-section", "gateways");
+      }
+    });
     root.querySelectorAll<HTMLElement>(".alert.ai").forEach((a) => {
-      if (a.textContent?.toLowerCase().includes("marzpay") || a.textContent?.toLowerCase().includes("platform-wide")) {
+      const t = a.textContent?.toLowerCase() ?? "";
+      if (t.includes("marzpay") || t.includes("platform-wide")) {
         a.setAttribute("data-admin-section", "gateways");
       }
     });
