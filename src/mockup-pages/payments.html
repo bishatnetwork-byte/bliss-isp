@@ -1,0 +1,18 @@
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <input class="fc" id="p-search" placeholder="🔍 Search by customer, phone, TXN, ref, or voucher..." style="max-width:320px" oninput="renderPayments(pfilt)"/>
+    <div class="tab-bar" id="ptabs" style="margin-bottom:0">
+      <button class="tab act" data-f="all" onclick="pfilter(this)">All</button>
+      <button class="tab" data-f="completed" onclick="pfilter(this)">Completed</button>
+      <button class="tab" data-f="pending" onclick="pfilter(this)">Pending</button>
+      <button class="tab" data-f="failed" onclick="pfilter(this)">Failed</button>
+    </div>
+    <button class="btn btn-s btn-sm" onclick="exportPayCSV()">⬇ Export CSV</button>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>TXN</th><th>Customer</th><th>Amount</th><th>Method</th><th>Ref</th><th>Plan</th><th>Voucher</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="ptbody"></tbody>
+      </table>
+    </div>
+  </div>

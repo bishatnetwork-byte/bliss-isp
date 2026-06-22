@@ -1,0 +1,18 @@
+<div class="alert ai"><span class="al-ico">🏆</span>Ranked by total spend — every completed payment, online or cash, counted against the customer's phone number. Top buyers are your best targets for loyalty offers or priority alerts.</div>
+  <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat blue"><div class="stat-lbl">Tracked Customers</div><div class="stat-val" id="wu-total">0</div><div class="stat-sub">With at least 1 purchase</div></div>
+    <div class="stat green"><div class="stat-lbl">Repeat Customers</div><div class="stat-val" id="wu-repeat">0</div><div class="stat-sub">Bought 2+ times</div></div>
+    <div class="stat purple"><div class="stat-lbl">Top Customer Spend</div><div class="stat-val" id="wu-top">UGX 0</div><div class="stat-sub" id="wu-top-name">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-hd" style="flex-wrap:wrap;gap:10px">
+      <input class="fc" id="wu-search" placeholder="🔍 Search by name or phone..." style="max-width:320px" oninput="renderWifiUsers()"/>
+      <button class="btn btn-s btn-sm" onclick="exportWifiUsersCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Customer</th><th>Phone</th><th>Purchases</th><th>Total Spent</th><th>Last Purchase</th><th>Actions</th></tr></thead>
+        <tbody id="wu-tbody"></tbody>
+      </table>
+    </div>
+  </div>

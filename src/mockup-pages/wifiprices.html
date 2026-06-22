@@ -1,0 +1,44 @@
+<div class="g2" style="align-items:start">
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">➕ Add / Edit Plan</span></div>
+        <div class="card-body">
+          <input type="hidden" id="ep-id"/>
+          <div class="fg c2">
+            <div class="form-group"><label class="fl frq">Plan Name</label><input class="fc" id="ep-name" placeholder="e.g. Daily"/></div>
+            <div class="form-group"><label class="fl frq">Price (UGX)</label><input class="fc" type="number" id="ep-price" placeholder="5000"/></div>
+          </div>
+          <div class="fg c2">
+            <div class="form-group"><label class="fl frq">Duration</label><input class="fc" id="ep-duration" placeholder="24h or 7d"/></div>
+            <div class="form-group"><label class="fl frq">Speed Limit</label><input class="fc" id="ep-speed" placeholder="10M/10M"/></div>
+          </div>
+          <div class="fg c2">
+            <div class="form-group"><label class="fl">MikroTik Profile</label><input class="fc" id="ep-profile" placeholder="hotspot-daily"/></div>
+            <div class="form-group"><label class="fl">Color</label><input type="color" class="fc" id="ep-color" value="#3b82f6" style="height:36px;padding:2px 4px"/></div>
+          </div>
+          <div class="form-group"><label class="fl">Description (shown on portal)</label><input class="fc" id="ep-desc" placeholder="Unlimited browsing for 24 hours"/></div>
+          <div class="btn-row">
+            <button class="btn btn-p" id="ep-save-btn" style="flex:1" onclick="savePlan()">💾 Save Plan</button>
+            <button class="btn btn-s" onclick="clearPlanForm()">✕ Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">📶 All Plans</span><span class="badge bg-blue" id="plan-count-badge">0 plans</span></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Plan</th><th>Price</th><th>Duration</th><th>Speed</th><th>Profile</th><th>Actions</th></tr></thead>
+            <tbody id="plans-tbl"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">👁 Plan Preview (as shown on portal)</span></div>
+        <div class="card-body">
+          <div style="display:flex;flex-wrap:wrap;gap:10px" id="plan-portal-preview"></div>
+        </div>
+      </div>
+    </div>
+  </div>

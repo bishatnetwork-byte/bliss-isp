@@ -1,0 +1,12 @@
+<div style="display:flex;align-items:center;gap:10px">
+      <button class="menu-btn" id="menu-btn" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
+      <div class="page-title" id="pt">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <span id="tg-on" style="display:none;font-size:11px;color:var(--blue);font-weight:700">✈ Alerts</span>
+      <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-toggle-btn">🌙</button>
+      <button class="tb-btn accent" onclick="nav('sell')">＋ New Sale</button>
+      <div class="avatar" id="topbar-avatar" onclick="authLogoutConfirm()" title="Click to sign out" style="cursor:pointer">A</div>
+    </div>
+  </div>
+  <div id="sidebar-backdrop" onclick="closeSidebar()">

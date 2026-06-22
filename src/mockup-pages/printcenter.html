@@ -1,0 +1,76 @@
+<div class="g2" style="align-items:start">
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">⚙️ Print Settings</span></div>
+        <div class="card-body">
+          <div class="form-group"><label class="fl">Ticket Design</label>
+            <select class="fc" id="pc-design" onchange="updatePrintPreview();syncPrintSettingsLive()">
+              <option value="template-a">🎨 Design A (Dark)</option>
+              <option value="template-b">🎨 Design B (Green)</option>
+              <option value="template-c">🎨 Design C (White)</option>
+              <option value="template-d">🎨 Design D (Purple)</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="fl">Ticket Size</label>
+            <select class="fc" id="pc-size" onchange="updatePrintPreview();syncPrintSettingsLive()">
+              <option value="compact">Compact (small, more per page)</option>
+              <option value="standard">Standard</option>
+              <option value="large">Large (easier to read)</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="fl">Vouchers Per Page (when printing)</label>
+            <select class="fc" id="pc-perpage" onchange="updatePrintPreview();syncPrintSettingsLive()">
+              <option value="4">4 per page</option>
+              <option value="6">6 per page</option>
+              <option value="8">8 per page</option>
+              <option value="10">10 per page</option>
+              <option value="12">12 per page</option>
+              <option value="16">16 per page</option>
+              <option value="20">20 per page</option>
+              <option value="25">25 per page</option>
+              <option value="30">30 per page</option>
+            </select>
+            <div class="fhint">Higher counts fit best with Compact size. This actually controls the printed page layout now, not just the on-screen preview.</div>
+          </div>
+          <button class="btn btn-p" style="width:100%" onclick="savePrintSettings()">💾 Save as Default</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">📦 Print From</span></div>
+        <div class="card-body">
+          <div class="form-group"><label class="fl">Source</label>
+            <select class="fc" id="pc-source" onchange="updatePrintPreview()">
+              <option value="unused">Unused vouchers (not yet printed/sold)</option>
+              <option value="all">All vouchers</option>
+              <option value="selected">Currently selected (from Voucher Manager)</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="fl">Limit (optional)</label><input class="fc" type="number" id="pc-limit" placeholder="Leave blank for all matching"/></div>
+          <div class="btn-row">
+            <button class="btn btn-s" style="flex:1" onclick="updatePrintPreview()">🔄 Refresh Preview</button>
+            <button class="btn btn-p" style="flex:1" onclick="printFromCenter()">🖨️ Print Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">👁️ Preview</span><span class="badge" id="pc-preview-count">0 tickets</span></div>
+        <div class="card-body">
+          <div id="pc-preview-wrap" style="background:#f3f4f6;border-radius:10px;padding:14px;max-height:600px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:12px;justify-content:center"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><span class="card-title">🗂️ Batch History</span></div>
+    <div class="card-body">
+      <div class="alert ai" id="pc-history-empty" style="display:none"><span class="al-ico">ℹ️</span>No batches yet — generate a batch from Voucher Manager and it'll show up here with full reprint history.</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Batch</th><th>Plan</th><th>Qty</th><th>Created</th><th>Printed</th><th>Actions</th></tr></thead>
+          <tbody id="pc-history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>

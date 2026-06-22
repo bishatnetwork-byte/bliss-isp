@@ -1,0 +1,14 @@
+<div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat green"><div class="stat-lbl">Online Sessions</div><div class="stat-val" id="cl-cnt">3</div><div class="stat-sub">Active now</div></div>
+    <div class="stat blue"><div class="stat-lbl">Total Uploaded</div><div class="stat-val">10.6 GB</div><div class="stat-sub">All sessions</div></div>
+    <div class="stat purple"><div class="stat-lbl">Total Downloaded</div><div class="stat-val">4.1 GB</div><div class="stat-sub">All sessions</div></div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><span class="card-title">🟢 Active Sessions</span><button class="btn btn-s btn-sm" onclick="refreshClients()">↻ Refresh</button></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>User</th><th>MAC</th><th>IP</th><th>Plan</th><th>Uptime</th><th>↑ Upload</th><th>↓ Download</th><th>Signal</th><th>Actions</th></tr></thead>
+        <tbody id="cl-tbody"></tbody>
+      </table>
+    </div>
+  </div>

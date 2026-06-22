@@ -1,0 +1,112 @@
+<div class="g2" style="align-items:start">
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">🌐 Choose Portal Template</span></div>
+        <div class="card-body">
+          <div class="template-selector">
+            <div class="tmpl-card sel" data-tpl="a" onclick="selPortal(this)">
+              <div class="tmpl-thumb" style="background:linear-gradient(135deg,#0f0c29,#302b63)">🌙</div>
+              <div class="tmpl-name">Midnight</div>
+            </div>
+            <div class="tmpl-card" data-tpl="b" onclick="selPortal(this)">
+              <div class="tmpl-thumb" style="background:linear-gradient(135deg,#0d7377,#14a085)">🌿</div>
+              <div class="tmpl-name">Emerald</div>
+            </div>
+            <div class="tmpl-card" data-tpl="c" onclick="selPortal(this)">
+              <div class="tmpl-thumb" style="background:#fff;border:1px solid var(--border)">☀️</div>
+              <div class="tmpl-name">Clean</div>
+            </div>
+            <div class="tmpl-card" data-tpl="d" onclick="selPortal(this)">
+              <div class="tmpl-thumb" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)">🔴</div>
+              <div class="tmpl-name">Neon</div>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <div class="form-group"><label class="fl">Business / Hotspot Name</label><input class="fc" id="cp-bizname" placeholder="WiFi Zone Kampala" oninput="updatePortalPreview()"/></div>
+          <div class="form-group"><label class="fl">Tagline / Welcome Message</label><input class="fc" id="cp-tagline" placeholder="Fast. Reliable. Affordable." oninput="updatePortalPreview()"/></div>
+          <div class="form-group"><label class="fl">Logo Emoji</label><input class="fc" id="cp-emoji" value="📶" maxlength="4" style="font-size:20px;width:80px" oninput="updatePortalPreview()"/></div>
+          <div class="fg c2">
+            <div class="form-group"><label class="fl">Primary Color</label><input type="color" class="fc" id="cp-color1" value="#2563eb" style="height:36px;padding:2px 4px" oninput="updatePortalPreview()"/></div>
+            <div class="form-group"><label class="fl">Button Text</label><input class="fc" id="cp-btntext" value="Connect Now" oninput="updatePortalPreview()"/></div>
+          </div>
+          <div class="sep"></div>
+          <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">How Can Clients Get Online?</div>
+          <label class="perm-chip" style="margin-bottom:8px">
+            <input type="checkbox" id="cp-allow-momo" checked onchange="updatePortalPreview()"/>
+            📱 Allow buying instantly with Mobile Money (MTN/Airtel)
+          </label>
+          <label class="perm-chip" style="margin-bottom:14px">
+            <input type="checkbox" id="cp-allow-voucher" checked onchange="updatePortalPreview()"/>
+            🎫 Allow entering a pre-generated physical voucher code
+          </label>
+          <div class="sep"></div>
+          <label class="perm-chip" style="margin-bottom:10px">
+            <input type="checkbox" id="cp-video-enabled" onchange="toggleVideoFields()"/>
+            📺 Play a promo video right after the client connects
+          </label>
+          <div id="cp-video-fields" style="display:none">
+            <div class="fg c2">
+              <div class="form-group"><label class="fl">Platform</label>
+                <select class="fc" id="cp-video-platform" onchange="updatePortalVideoFields()">
+                  <option value="youtube">YouTube</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="facebook">Facebook</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="fl">Video Link</label><input class="fc" id="cp-video-url" placeholder="https://www.youtube.com/watch?v=..." oninput="updatePortalPreview()"/></div>
+            </div>
+            <label class="perm-chip" style="margin-bottom:10px">
+              <input type="checkbox" id="cp-video-autoplay" onchange="updatePortalPreview()"/>
+              Autoplay (muted) when the portal loads
+            </label>
+            <div class="form-group"><label class="fl">Minimum Watch Time Before Skipping</label>
+              <div style="display:flex;align-items:center;gap:8px"><input class="fc" type="number" id="cp-video-minsec" value="5" min="0" max="120" style="width:100px" oninput="updatePortalPreview()"/><span style="font-size:12px;color:var(--t3)">seconds</span></div>
+              <div class="fhint">The "Continue" button stays disabled with a countdown until this many seconds pass — set to 0 to let clients skip immediately.</div>
+            </div>
+            <div class="fhint" style="margin-bottom:14px">Use the public watch link — paste it as-is, no need to find an "embed" URL. Shown on the success screen after the client connects, so it loads with their now-active internet — no walled-garden setup needed, and a real play counts toward the video's view count.</div>
+            <div class="alert ai" style="margin-bottom:14px"><span class="al-ico">▶️</span>Preview the post-login screen: pick a plan or enter a voucher code above to see how it looks.</div>
+          </div>
+          <button class="btn btn-p" style="width:100%" onclick="savePortalSettings()">💾 Save & Apply Portal</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">📊 Video Ad Stats</span></div>
+        <div class="card-body">
+          <div class="alert ai"><span class="al-ico">ℹ️</span>Tracked from real plays in this app — the preview itself, since there's no live captive portal connected yet to pull stats from actual hotspot clients.</div>
+          <div class="stats-row" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px">
+            <div class="stat blue"><div class="stat-lbl">Impressions</div><div class="stat-val" id="vs-impressions">0</div><div class="stat-sub">Success screen reached w/ video on</div></div>
+            <div class="stat green"><div class="stat-lbl">Plays</div><div class="stat-val" id="vs-plays">0</div><div class="stat-sub">Valid video actually loaded</div></div>
+            <div class="stat purple"><div class="stat-lbl">Watch Time</div><div class="stat-val" id="vs-watchtime">0s</div><div class="stat-sub">Total seconds watched</div></div>
+            <div class="stat yellow"><div class="stat-lbl">Completed Views</div><div class="stat-val" id="vs-completions">0</div><div class="stat-sub">Stayed full min. watch time</div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Recent Activity</span>
+            <button class="btn btn-r btn-xs" onclick="resetVideoStats()">🗑️ Reset Stats</button>
+          </div>
+          <div id="vs-history" style="max-height:180px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">👁 Live Preview</span><span class="badge bg-blue">Mobile View</span></div>
+        <div class="card-body" style="display:flex;justify-content:center">
+          <div class="portal-device">
+            <div class="portal-screen" id="portal-preview"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">⚙️ Portal Config (MikroTik)</span></div>
+        <div class="card-body">
+          <div class="alert ai"><span class="al-ico">ℹ️</span>Upload portal files to MikroTik: Files → flash/hotspot/</div>
+          <div class="fg c2">
+            <div class="form-group"><label class="fl">Redirect URL</label><input class="fc" value="http://192.168.88.1/login" readonly/></div>
+            <div class="form-group"><label class="fl">Port</label><input class="fc" value="80" readonly/></div>
+          </div>
+          <button class="btn btn-s" style="width:100%" onclick="notify('Portal HTML exported!','success')">⬇ Export Portal HTML</button>
+        </div>
+      </div>
+    </div>
+  </div>

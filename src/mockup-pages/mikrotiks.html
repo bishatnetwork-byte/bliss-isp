@@ -1,0 +1,16 @@
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div style="font-size:13px;color:var(--t3)">Manage all your MikroTik routers from one place</div>
+    <div class="btn-row">
+      <button class="btn btn-v" onclick="showWireguardOnboardModal()">⚡ Add Router (Behind NAT / WireGuard)</button>
+      <button class="btn btn-p" onclick="showAddMkModal()">＋ Add Existing Router</button>
+    </div>
+  </div>
+  <div id="mk-devices-list"></div>
+  <div class="card" style="margin-top:4px">
+    <div class="card-hd"><span class="card-title">📋 Router Command Reference</span></div>
+    <div class="card-body">
+      <div class="alert ai"><span class="al-ico">ℹ️</span>Run these commands in MikroTik terminal to enable API access.</div>
+      <div style="background:var(--bg0);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:monospace;font-size:11px;color:#10b981;line-height:2;white-space:pre-wrap" id="mk-cmd-ref"></div>
+      <button class="btn btn-s btn-sm" style="margin-top:8px" onclick="copyMkCmds()">📋 Copy</button>
+    </div>
+  </div>

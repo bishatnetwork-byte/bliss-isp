@@ -1,0 +1,48 @@
+<div class="stats-row">
+    <div class="stat green" style="cursor:pointer" onclick="nav('vouchers')" title="View all vouchers"><div class="stat-lbl">Active Vouchers</div><div class="stat-val" id="d-av">0</div><div class="stat-sub" id="d-on">0 online</div><div class="stat-ico">🎫</div></div>
+    <div class="stat yellow"><div class="stat-lbl">Today Revenue</div><div class="stat-val" id="d-today">UGX 0</div><div class="stat-sub" id="d-ts">0 sales</div><div class="stat-ico">📈</div></div>
+    <div class="stat purple"><div class="stat-lbl">SMS Credits</div><div class="stat-val" id="d-sms">0</div><div class="stat-sub">Available credits</div><div class="stat-ico">📱</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><span class="card-title">💰 Sales by Period</span><span class="fhint" style="margin:0">Cash vs Mobile Money</span></div>
+    <div class="card-body" id="d-period-summary">
+      <div class="empty"><span class="empty-ico">⏳</span>Loading…</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><span class="card-title">📉 Payment Trends</span>
+      <select class="fc" id="d-trend-days" style="width:auto;padding:5px 10px;font-size:11px" onchange="loadDashboardTrend()">
+        <option value="7">Last 7 days</option>
+        <option value="14" selected>Last 14 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="90">Last 90 days</option>
+      </select>
+    </div>
+    <div class="card-body" id="d-trend-chart" style="min-height:220px">
+      <div class="empty"><span class="empty-ico">⏳</span>Loading…</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">🟢 Online Clients</span><span class="badge bg-green" id="d-online-badge">0 live</span></div>
+      <div class="card-body" style="padding:8px 18px" id="d-clients-list"><div class="empty"><span class="empty-ico">📡</span>No active sessions</div></div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">⚡ Activity Feed</span></div>
+      <div class="card-body" style="padding:8px 18px" id="d-activity"><div class="empty"><span class="empty-ico">🕐</span>No activity yet</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><span class="card-title">📊 Revenue by Plan</span></div>
+    <div class="card-body" id="d-revchart"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><span class="card-title">🖥️ Router Status</span><span class="fhint" style="margin:0" id="d-router-status-updated"></span></div>
+    <div class="card-body" id="d-router-status">
+      <div class="empty"><span class="empty-ico">📡</span>No routers configured yet</div>
+    </div>
+  </div>

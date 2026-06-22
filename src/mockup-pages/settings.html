@@ -1,0 +1,135 @@
+<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <span id="autosave-indicator" style="font-size:11px;font-weight:700;color:var(--green);opacity:0;transition:opacity .3s">✓ Saved</span>
+  </div>
+  <div class="tab-bar" id="stabs">
+    <button class="tab act" data-s="s-mk" onclick="selStab(this)">🔌 MikroTik</button>
+    <button class="tab" data-s="s-sec" onclick="selStab(this)">🔐 Security<span class="nav-badge" id="sec-tab-badge" style="display:none">!</span></button>
+    <button class="tab" data-s="s-pay" onclick="selStab(this)">💳 Payments</button>
+    <button class="tab" data-s="s-tg" onclick="selStab(this)">✈ Telegram</button>
+    <button class="tab" data-s="s-sms" onclick="selStab(this)">📱 SMS</button>
+    <button class="tab" data-s="s-biz" onclick="selStab(this)">🏢 Business</button>
+    <button class="tab" data-s="s-health" onclick="selStab(this)">🩺 System Health<span class="nav-badge" id="health-tab-badge" style="display:none">!</span></button>
+  </div>
+  <div id="s-mk" class="stab">
+    <div class="card"><div class="card-hd"><span class="card-title">🔌 Primary MikroTik Connection</span><span class="badge bg-green">Connected</span></div><div class="card-body">
+      <div class="fg c2"><div class="form-group"><label class="fl">Router IP</label><input class="fc" id="set-mk-host" value="192.168.88.1"/></div><div class="form-group"><label class="fl">API Port</label><input class="fc" id="set-mk-port" value="8728"/></div></div>
+      <div class="fg c2"><div class="form-group"><label class="fl">Username</label><input class="fc" id="set-mk-user" value="admin"/></div><div class="form-group"><label class="fl">Password</label><input class="fc" id="set-mk-pass" type="password" placeholder="Router password"/></div></div>
+      <div class="form-group"><label class="fl">Hotspot Server Name</label><input class="fc" id="set-mk-hs" value="hotspot1"/></div>
+      <div class="btn-row"><button class="btn btn-p" onclick="saveMkSettings()">🔌 Connect & Test</button></div>
+      <div class="fhint">Fields save automatically as you type — this button also tests the connection.</div>
+    </div></div>
+  </div>
+  <div id="s-pay" class="stab" style="display:none">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">💳 MarzPay — Mobile Money Collection</span><span class="badge" id="mpg-status-badge">Not Connected</span></div>
+      <div class="card-body">
+        <div class="alert ai"><span class="al-ico">ℹ️</span>One MarzPay account handles both MTN and Airtel automatically — it detects the network from the customer's phone number. This is the account customer payments actually land in, so each business connects their own.</div>
+        <div class="fg c2">
+          <div class="form-group"><label class="fl frq">API Key</label><input class="fc" id="mpg-key" placeholder="Your MarzPay API key"/></div>
+          <div class="form-group"><label class="fl">API Secret</label><input class="fc" id="mpg-secret" type="password" placeholder="••••••••"/><div class="fhint" id="mpg-secret-hint">Get both from your MarzPay dashboard → API Keys</div></div>
+        </div>
+        <div class="fg c2">
+          <div class="form-group"><label class="fl">Environment</label><select class="fc" id="mpg-env"><option value="sandbox">Sandbox (testing)</option><option value="live">Live (real money)</option></select></div>
+          <div class="form-group"><label class="fl">Webhook Secret <span style="font-weight:400;color:var(--t4)">(optional)</span></label><input class="fc" id="mpg-webhook-secret" placeholder="From MarzPay's webhook settings"/><div class="fhint">Verifies payment confirmations really came from MarzPay</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-p" id="mpg-save-btn" onclick="saveMarzpayGateway()">💾 Save & Enable</button>
+          <button class="btn btn-r btn-sm" id="mpg-disable-btn" onclick="disableMarzpayGateway()">✕ Disable</button>
+        </div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="card-hd"><span class="card-title" style="color:var(--yellow)">📱 MTN MoMo</span></div><div class="card-body">
+        <div class="fhint" style="margin-bottom:10px">Reference info shown to staff for manual/cash-equivalent sales — not used for the real API connection above</div>
+        <div class="fg c2"><div class="form-group"><label class="fl">USSD Code</label><input class="fc" id="set-mtn-ussd" value="*165*3#"/></div><div class="form-group"><label class="fl">PayBill No.</label><input class="fc" id="set-mtn-pb" value="777123"/></div></div>
+        <div class="fhint">Saves automatically as you type</div>
+      </div></div>
+      <div class="card"><div class="card-hd"><span class="card-title" style="color:var(--red)">📱 Airtel Money</span></div><div class="card-body">
+        <div class="fhint" style="margin-bottom:10px">Reference info shown to staff for manual/cash-equivalent sales — not used for the real API connection above</div>
+        <div class="fg c2"><div class="form-group"><label class="fl">USSD Code</label><input class="fc" id="set-air-ussd" value="*185*9#"/></div><div class="form-group"><label class="fl">PayBill No.</label><input class="fc" id="set-air-pb" value="888456"/></div></div>
+        <div class="fhint">Saves automatically as you type</div>
+      </div></div>
+    </div>
+  </div>
+  <div id="s-tg" class="stab" style="display:none">
+    <div class="alert ai"><span class="al-ico">ℹ️</span>Each account gets 3 separate Telegram bots so different alert types can go to different chats/people — e.g. a finance person only watches the Withdraw bot, while staff watch WiFi Activity.</div>
+    <div class="card"><div class="card-hd"><span class="card-title">💳 Payments Bot</span><span class="badge" id="tg-pay-badge" style="background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.2)">Inactive</span></div><div class="card-body">
+      <div class="fhint" style="margin-bottom:10px">Alerts for completed mobile money / cash sales</div>
+      <div class="form-group"><label class="fl">Bot Token</label><input class="fc" id="tg-pay-tok" placeholder="1234567890:ABC..."/><div class="fhint" id="tg-pay-tok-hint">Get from @BotFather → /newbot</div></div>
+      <div class="form-group"><label class="fl">Chat ID</label><input class="fc" id="tg-pay-cid" placeholder="-1001234567890"/><div class="fhint">Get from @userinfobot</div></div>
+      <div class="btn-row"><button class="btn btn-p" id="tg-pay-save-btn" onclick="saveTgBot('payments')">✈ Enable</button><button class="btn btn-s" onclick="testTg('payments')">📤 Test</button><button class="btn btn-r btn-sm" onclick="disableTg('payments')">✕ Disable</button></div>
+    </div></div>
+    <div class="card"><div class="card-hd"><span class="card-title">📶 WiFi Activity Bot</span><span class="badge" id="tg-wifi-badge" style="background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.2)">Inactive</span></div><div class="card-body">
+      <div class="fhint" style="margin-bottom:10px">Alerts for voucher creation (single, batch, or via sale) and client device logins</div>
+      <div class="form-group"><label class="fl">Bot Token</label><input class="fc" id="tg-wifi-tok" placeholder="1234567890:ABC..."/><div class="fhint" id="tg-wifi-tok-hint"></div></div>
+      <div class="form-group"><label class="fl">Chat ID</label><input class="fc" id="tg-wifi-cid" placeholder="-1001234567890"/></div>
+      <div class="btn-row"><button class="btn btn-p" id="tg-wifiActivity-save-btn" onclick="saveTgBot('wifiActivity')">✈ Enable</button><button class="btn btn-s" onclick="testTg('wifiActivity')">📤 Test</button><button class="btn btn-r btn-sm" onclick="disableTg('wifiActivity')">✕ Disable</button></div>
+    </div></div>
+    <div class="card"><div class="card-hd"><span class="card-title">🏧 Withdraw Bot</span><span class="badge" id="tg-wd-badge" style="background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.2)">Inactive</span></div><div class="card-body">
+      <div class="fhint" style="margin-bottom:10px">Alerts for initiated and completed withdrawals (wallet + platform fees)</div>
+      <div class="form-group"><label class="fl">Bot Token</label><input class="fc" id="tg-wd-tok" placeholder="1234567890:ABC..."/><div class="fhint" id="tg-wd-tok-hint"></div></div>
+      <div class="form-group"><label class="fl">Chat ID</label><input class="fc" id="tg-wd-cid" placeholder="-1001234567890"/></div>
+      <div class="btn-row"><button class="btn btn-p" id="tg-withdraw-save-btn" onclick="saveTgBot('withdraw')">✈ Enable</button><button class="btn btn-s" onclick="testTg('withdraw')">📤 Test</button><button class="btn btn-r btn-sm" onclick="disableTg('withdraw')">✕ Disable</button></div>
+    </div></div>
+  </div>
+  <div id="s-sms" class="stab" style="display:none">
+    <div class="card"><div class="card-hd"><span class="card-title">📱 SMS Gateway</span><span class="badge" id="sms-status-badge">Not Connected</span></div><div class="card-body">
+      <div class="fg c2"><div class="form-group"><label class="fl">Provider</label><select class="fc" id="set-sms-prov"><option value="africastalking">Africa's Talking</option><option value="twilio">Twilio</option><option value="beem">Beem</option><option value="infobip">Infobip</option><option value="custom">Custom REST</option></select></div><div class="form-group"><label class="fl">Sender Name</label><input class="fc" id="set-sms-sender" value="WIFIZONE"/></div></div>
+      <div class="form-group" id="set-sms-endpoint-wrap"><label class="fl">Endpoint URL <span style="font-weight:400;color:var(--t4)">(required for Custom REST; optional override otherwise)</span></label><input class="fc" id="set-sms-endpoint" placeholder="https://your-provider.com/api/sms/send"/></div>
+      <div class="fg c2"><div class="form-group"><label class="fl frq">API Key</label><input class="fc" id="set-sms-key" placeholder="Your API key"/></div><div class="form-group"><label class="fl">API Secret</label><input class="fc" id="set-sms-sec" type="password" placeholder="••••••••"/><div class="fhint" id="set-sms-sec-hint">Not every provider needs a separate secret</div></div></div>
+      <div class="form-group"><label class="fl">Voucher SMS Template</label><textarea class="fc" id="set-sms-tpl">Dear {name}, your WiFi code is: {code}. Plan: {plan}. Valid until {expires}. - {business}</textarea><div class="fhint">Placeholders: {name} {code} {plan} {expires} {business}</div></div>
+      <div class="btn-row"><button class="btn btn-p" id="sms-save-btn" onclick="saveSmsGateway()">💾 Save & Enable</button><button class="btn btn-s" id="sms-test-btn" onclick="testSmsGateway()">📱 Test SMS</button><button class="btn btn-r btn-sm" id="sms-disable-btn" onclick="disableSmsGateway()">✕ Disable</button></div>
+    </div></div>
+  </div>
+  <div id="s-biz" class="stab" style="display:none">
+    <div class="card"><div class="card-hd"><span class="card-title">🏢 Business Details</span></div><div class="card-body">
+      <div class="fg c2"><div class="form-group"><label class="fl">Business Name</label><input class="fc" id="set-biz-name" value="WiFi Zone Kampala" oninput="updateBizDisplay()"/></div><div class="form-group"><label class="fl">Currency</label><select class="fc" id="set-biz-cur"><option value="UGX">UGX</option><option value="KES">KES</option><option value="TZS">TZS</option><option value="USD">USD</option></select></div></div>
+      <div class="fg c2"><div class="form-group"><label class="fl">Default Expiry (days)</label><input class="fc" type="number" id="set-biz-exp" value="7"/><div class="fhint">Fallback only — actual voucher expiry is set per-plan</div></div><div class="form-group"><label class="fl">Timezone</label><select class="fc" id="set-biz-tz"><option>Africa/Kampala</option><option>Africa/Nairobi</option><option>Africa/Lagos</option></select></div></div>
+      <div class="form-group"><label class="fl">Login Page URL</label><input class="fc" id="set-biz-url" value="http://192.168.88.1/login"/></div>
+      <div class="fhint" style="margin-bottom:10px">🎫 Voucher code prefixes (online/offline) are configured in Admin Panel → Voucher Prefix Rules.</div>
+      <div class="fhint" style="margin-bottom:10px">Saves automatically as you type</div>
+      <div class="btn-row"><button class="btn btn-r btn-sm" onclick="if(confirm('Clear all data?')){STATE=defaultState();save();location.reload()}">🗑️ Reset All Data</button></div>
+    </div></div>
+    <div class="card"><div class="card-hd"><span class="card-title">🗄️ Data</span></div><div class="card-body"><div class="btn-row"><button class="btn btn-s" onclick="exportAll()">⬇ Export JSON</button><button class="btn btn-s" onclick="notify('Import: paste JSON in console','info')">⬆ Import</button></div><div class="fhint" style="margin-top:8px">Data stored in browser localStorage. Export regularly as backup.</div></div></div>
+  </div>
+  <div id="s-sec" class="stab" style="display:none">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">🔐 Withdraw Passcode</span><span class="badge" id="sec-status-badge">Not Set Up</span></div>
+      <div class="card-body">
+        <div class="alert ai"><span class="al-ico">ℹ️</span>When enabled, a 6-digit passcode is required before any withdrawal (Withdraw page or Admin fee withdrawals). The server verifies it directly — it's never stored or checked on this device.</div>
+
+        <div id="sec-step-passcode" style="display:none">
+          <div class="fg c2">
+            <div class="form-group"><label class="fl frq">New Passcode</label><input class="fc mono" id="sec-new-pass" placeholder="000000" maxlength="6" style="letter-spacing:4px;font-size:18px;text-align:center"/></div>
+            <div class="form-group"><label class="fl frq">Confirm Passcode</label><input class="fc mono" id="sec-new-pass2" placeholder="000000" maxlength="6" style="letter-spacing:4px;font-size:18px;text-align:center"/></div>
+          </div>
+          <button class="btn btn-p" style="width:100%" id="sec-save-btn" onclick="setWithdrawPasscode()">🔐 Enable Withdraw Passcode</button>
+        </div>
+
+        <div id="sec-step-enabled" style="display:none">
+          <div class="alert ag"><span class="al-ico">✅</span>Withdraw passcode is active. All withdrawals will require this code.</div>
+          <div class="btn-row">
+            <button class="btn btn-s" onclick="showChangePasscodeForm()">🔄 Change Passcode</button>
+            <button class="btn btn-r btn-sm" id="sec-disable-btn" onclick="disableWithdrawPasscode()">✕ Disable</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="s-health" class="stab" style="display:none">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">🩺 System Health</span><span class="badge" id="health-overall-badge">Checking…</span></div>
+      <div class="card-body">
+        <div class="alert ai"><span class="al-ico">ℹ️</span>Monitors your connected gateways and routers. If anything goes down, you'll see it here — and optionally get a Telegram alert via the WiFi Activity bot.</div>
+        <label class="perm-chip" style="margin-bottom:14px">
+          <input type="checkbox" id="health-alert-enabled" checked onchange="saveHealthAlertPref()"/>
+          Send a Telegram alert when a connected service goes down
+        </label>
+        <div id="health-list"></div>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-p" onclick="runHealthCheck(true)">🔄 Check Now</button>
+          <span class="fhint" id="health-last-check" style="margin:0;align-self:center"></span>
+        </div>
+      </div>
+    </div>
+  </div>
