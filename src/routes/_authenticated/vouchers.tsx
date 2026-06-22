@@ -91,7 +91,7 @@ function VouchersPage() {
           if (curFilter !== "all" && v.status !== curFilter) return false;
           if (!curSearch) return true;
           const q = curSearch.toLowerCase();
-          return v.code.toLowerCase().includes(q) || (v.customers?.phone ?? "").includes(q);
+          return v.code.toLowerCase().includes(q) || (v.customer_phone ?? "").includes(q);
         };
 
         const render = () => {
@@ -114,8 +114,8 @@ function VouchersPage() {
             return `<tr data-id="${v.id}">
               <td><input type="checkbox" class="vchk"/></td>
               <td class="mono" style="font-weight:700">${esc(v.code)}</td>
-              <td>${esc(v.customers?.full_name ?? "—")}</td>
-              <td>${esc(v.customers?.phone ?? "—")}</td>
+              <td>${esc(v.customer_name ?? "—")}</td>
+              <td>${esc(v.customer_phone ?? "—")}</td>
               <td>${esc(v.plans?.name ?? "—")}</td>
               <td>${v.plans ? fmt(Number(v.plans.price), v.plans.currency) : "—"}</td>
               <td><span class="badge ${badge}">${esc(v.status)}</span></td>
