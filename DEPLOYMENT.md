@@ -12,9 +12,9 @@ all server functions — no extra proxy needed.
 SSH into the same droplet that hosts bliss-isp, then paste **one** block:
 
 ```bash
-sudo DOMAIN=hotspotpro.bliss-isp.online \
+sudo DOMAIN=app.bliss-isp.com \
      GITHUB_REPO=https://github.com/<OWNER>/<REPO>.git \
-     ADMIN_EMAIL=admin@bliss-isp.online \
+     ADMIN_EMAIL=admin@bliss-isp.com \
      bash <(curl -fsSL https://raw.githubusercontent.com/<OWNER>/<REPO>/main/scripts/vps-bootstrap.sh)
 ```
 
@@ -38,7 +38,7 @@ pm2 restart hotspotpro --update-env
 
 ## 2. DNS
 
-Add an **A record** (or CNAME → `bliss-isp.online`) for `hotspotpro.bliss-isp.online` pointing at the same VPS IP. The bootstrap will obtain SSL on the next run.
+Add an **A record** (or CNAME → `bliss-isp.com`) for `app.bliss-isp.com` pointing at the same VPS IP. The bootstrap will obtain SSL on the next run.
 
 ---
 
@@ -71,7 +71,7 @@ single static IP — whitelist that IP once on:
 * **Each tenant's MikroTik** → only accept REST from `<VPS_IP>` on the
   `www-ssl` service.
 
-Clients still talk to `https://hotspotpro.bliss-isp.online`; Nginx
+Clients still talk to `https://app.bliss-isp.com`; Nginx
 terminates TLS and proxies to the Node app on `127.0.0.1:3001`.
 
 ---
@@ -92,5 +92,5 @@ sudo certbot renew --dry-run                          # test SSL renewal
 ## 6. Coexistence with Bliss-ISP
 
 * Bliss-ISP static site keeps serving on its own domain (no changes).
-* HotspotPro nginx site is scoped to `server_name hotspotpro.bliss-isp.online` only.
+* HotspotPro nginx site is scoped to `server_name app.bliss-isp.com` only.
 * Different deploy paths, different PM2 app names, different ports — zero overlap.

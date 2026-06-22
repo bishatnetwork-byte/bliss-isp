@@ -10,13 +10,13 @@
 #
 # Usage (paste as root):
 #   curl -fsSL https://raw.githubusercontent.com/<OWNER>/<REPO>/main/scripts/vps-bootstrap.sh \
-#     | sudo DOMAIN=hotspotpro.bliss-isp.online \
+#     | sudo DOMAIN=app.bliss-isp.com \
 #            GITHUB_REPO=https://github.com/<OWNER>/<REPO>.git \
-#            ADMIN_EMAIL=admin@bliss-isp.online \
+#            ADMIN_EMAIL=admin@bliss-isp.com \
 #            bash
 #
 # Or from a checked-out repo:
-#   sudo DOMAIN=hotspotpro.bliss-isp.online bash scripts/vps-bootstrap.sh
+#   sudo DOMAIN=app.bliss-isp.com bash scripts/vps-bootstrap.sh
 # =============================================================================
 set -euo pipefail
 
@@ -24,7 +24,7 @@ DEPLOY_PATH="${DEPLOY_PATH:-/var/www/hotspotpro}"
 APP_NAME="${APP_NAME:-hotspotpro}"
 APP_PORT="${APP_PORT:-3001}"            # bliss-isp serves on 80/443 static; we use 3001 upstream
 DOMAIN="${DOMAIN:-}"
-ADMIN_EMAIL="${ADMIN_EMAIL:-admin@bliss-isp.online}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin@bliss-isp.com}"
 GITHUB_REPO="${GITHUB_REPO:-}"
 NODE_MAJOR="${NODE_MAJOR:-20}"
 
