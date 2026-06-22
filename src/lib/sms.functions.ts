@@ -140,7 +140,11 @@ export const sendBulkSms = createServerFn({ method: "POST" })
     //    refunds individually; every attempt logs a row, success or failure.
     const results: { phone: string; status: "delivered" | "failed"; reason?: string }[] = [];
     let refundParts = 0;
-    const logs: Array<Record<string, unknown>> = [];
+    type SmsLogRow = {
+      owner_id: string; phone: string; name: string | null; body: string;
+      parts: number; status: string; kind: string; error?: string;
+    };
+    const logs: SmsLogRow[] = [];
 
     for (const r of data.recipients) {
       try {
