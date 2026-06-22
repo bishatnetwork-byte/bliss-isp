@@ -10,10 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as PortalRouteImport } from './routes/portal'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PTenantRouteImport } from './routes/p.$tenant'
 import { Route as AuthenticatedWithdrawRouteImport } from './routes/_authenticated/withdraw'
 import { Route as AuthenticatedWifiusersRouteImport } from './routes/_authenticated/wifiusers'
 import { Route as AuthenticatedWifipricesRouteImport } from './routes/_authenticated/wifiprices'
@@ -32,16 +32,12 @@ import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCaptiveRouteImport } from './routes/_authenticated/captive'
 import { Route as AuthenticatedBulksmsRouteImport } from './routes/_authenticated/bulksms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicConnectRouteImport } from './routes/api/public/connect'
 import { Route as ApiPublicWebhooksMpesaRouteImport } from './routes/api/public/webhooks/mpesa'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PortalRoute = PortalRouteImport.update({
-  id: '/portal',
-  path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -56,6 +52,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PTenantRoute = PTenantRouteImport.update({
+  id: '/p/$tenant',
+  path: '/p/$tenant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWithdrawRoute = AuthenticatedWithdrawRouteImport.update({
@@ -149,6 +150,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicConnectRoute = ApiPublicConnectRouteImport.update({
+  id: '/api/public/connect',
+  path: '/api/public/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksMpesaRoute = ApiPublicWebhooksMpesaRouteImport.update({
   id: '/api/public/webhooks/mpesa',
   path: '/api/public/webhooks/mpesa',
@@ -158,7 +164,6 @@ const ApiPublicWebhooksMpesaRoute = ApiPublicWebhooksMpesaRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/portal': typeof PortalRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/bulksms': typeof AuthenticatedBulksmsRoute
@@ -178,12 +183,13 @@ export interface FileRoutesByFullPath {
   '/wifiprices': typeof AuthenticatedWifipricesRoute
   '/wifiusers': typeof AuthenticatedWifiusersRoute
   '/withdraw': typeof AuthenticatedWithdrawRoute
+  '/p/$tenant': typeof PTenantRoute
+  '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/portal': typeof PortalRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/bulksms': typeof AuthenticatedBulksmsRoute
@@ -203,6 +209,8 @@ export interface FileRoutesByTo {
   '/wifiprices': typeof AuthenticatedWifipricesRoute
   '/wifiusers': typeof AuthenticatedWifiusersRoute
   '/withdraw': typeof AuthenticatedWithdrawRoute
+  '/p/$tenant': typeof PTenantRoute
+  '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRoutesById {
@@ -210,7 +218,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/portal': typeof PortalRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/bulksms': typeof AuthenticatedBulksmsRoute
@@ -230,6 +237,8 @@ export interface FileRoutesById {
   '/_authenticated/wifiprices': typeof AuthenticatedWifipricesRoute
   '/_authenticated/wifiusers': typeof AuthenticatedWifiusersRoute
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
+  '/p/$tenant': typeof PTenantRoute
+  '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/webhooks/mpesa': typeof ApiPublicWebhooksMpesaRoute
 }
 export interface FileRouteTypes {
@@ -237,7 +246,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/portal'
     | '/sitemap.xml'
     | '/admin'
     | '/bulksms'
@@ -257,12 +265,13 @@ export interface FileRouteTypes {
     | '/wifiprices'
     | '/wifiusers'
     | '/withdraw'
+    | '/p/$tenant'
+    | '/api/public/connect'
     | '/api/public/webhooks/mpesa'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/portal'
     | '/sitemap.xml'
     | '/admin'
     | '/bulksms'
@@ -282,13 +291,14 @@ export interface FileRouteTypes {
     | '/wifiprices'
     | '/wifiusers'
     | '/withdraw'
+    | '/p/$tenant'
+    | '/api/public/connect'
     | '/api/public/webhooks/mpesa'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/portal'
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/bulksms'
@@ -308,6 +318,8 @@ export interface FileRouteTypes {
     | '/_authenticated/wifiprices'
     | '/_authenticated/wifiusers'
     | '/_authenticated/withdraw'
+    | '/p/$tenant'
+    | '/api/public/connect'
     | '/api/public/webhooks/mpesa'
   fileRoutesById: FileRoutesById
 }
@@ -315,8 +327,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  PortalRoute: typeof PortalRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PTenantRoute: typeof PTenantRoute
+  ApiPublicConnectRoute: typeof ApiPublicConnectRoute
   ApiPublicWebhooksMpesaRoute: typeof ApiPublicWebhooksMpesaRoute
 }
 
@@ -327,13 +340,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portal': {
-      id: '/portal'
-      path: '/portal'
-      fullPath: '/portal'
-      preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -355,6 +361,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$tenant': {
+      id: '/p/$tenant'
+      path: '/p/$tenant'
+      fullPath: '/p/$tenant'
+      preLoaderRoute: typeof PTenantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/withdraw': {
@@ -483,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/connect': {
+      id: '/api/public/connect'
+      path: '/api/public/connect'
+      fullPath: '/api/public/connect'
+      preLoaderRoute: typeof ApiPublicConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/mpesa': {
       id: '/api/public/webhooks/mpesa'
       path: '/api/public/webhooks/mpesa'
@@ -542,8 +562,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  PortalRoute: PortalRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PTenantRoute: PTenantRoute,
+  ApiPublicConnectRoute: ApiPublicConnectRoute,
   ApiPublicWebhooksMpesaRoute: ApiPublicWebhooksMpesaRoute,
 }
 export const routeTree = rootRouteImport
