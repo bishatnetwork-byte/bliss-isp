@@ -269,11 +269,11 @@ function AdminPage() {
             value={section}
             onChange={(e) => setSection(e.target.value as typeof section)}
           >
-            <option value="all">All sections</option>
-            <option value="users">👥 Users</option>
-            <option value="gateways">🔌 Gateways</option>
-            <option value="fees">💰 Platform Fees</option>
+            <option value="users">👥 Users & Team</option>
+            <option value="gateways">🔌 Platform Gateways (Payment / SMS)</option>
+            <option value="fees">💰 Platform Fees & Wallet</option>
             <option value="mikrotik">📡 MikroTik Overview</option>
+            <option value="all">📋 Show all sections</option>
           </select>
           <span className="badge bg-blue" style={{ marginLeft: "auto" }}>
             {section === "all" ? "Showing everything" : `Filtered: ${section}`}
