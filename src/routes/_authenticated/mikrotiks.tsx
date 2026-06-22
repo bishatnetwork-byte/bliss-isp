@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { MockupPage } from "@/components/MockupPage";
 import html from "@/mockup-pages/mikrotiks.html?raw";
 import { listRouters, upsertRouter, deleteRouter, testRouter } from "@/lib/routers.functions";
+import { probeAllRouters } from "@/lib/router-health.functions";
 import { setHTML, esc, notify } from "@/lib/mockup-dom";
 
 export const Route = createFileRoute("/_authenticated/mikrotiks")({ component: MikrotiksPage });
@@ -22,6 +23,7 @@ function MikrotiksPage() {
   const saveFn = useServerFn(upsertRouter);
   const delFn = useServerFn(deleteRouter);
   const testFn = useServerFn(testRouter);
+  const probeAllFn = useServerFn(probeAllRouters);
   const { data: routers } = useQuery({ queryKey: ["routers"], queryFn: () => listFn(), refetchInterval: 60_000 });
 
   return (
@@ -33,6 +35,28 @@ function MikrotiksPage() {
         const list = routers ?? [];
         const cmdRef = root.querySelector<HTMLElement>("#mk-cmd-ref");
         if (cmdRef) cmdRef.textContent = CMD_REF;
+
+        const headerBar = root.querySelector<HTMLElement>("#mk-devices-list");
+        if (headerBar && !root.querySelector("#mk-probe-all")) {
+          const bar = document.createElement("div");
+          bar.style.cssText = "display:flex;justify-content:flex-end;margin-bottom:10px";
+          bar.innerHTML = '<button id="mk-probe-all" class="btn btn-s btn-sm">🔄 Probe all routers</button>';
+          headerBar.parentElement?.insertBefore(bar, headerBar);
+          bar.querySelector("button")!.addEventListener("click", async (e) => {
+            const btn = e.currentTarget as HTMLButtonElement;
+            btn.disabled = true; btn.textContent = "Probing…";
+            try {
+              const res = await probeAllFn();
+              const okN = res.results.filter(r => r.ok).length;
+              notify(`Probed ${res.count} — ${okN} online, ${res.count - okN} offline`, okN === res.count ? "success" : "info");
+              qc.invalidateQueries({ queryKey: ["routers"] });
+            } catch (err) {
+              notify((err as Error).message, "error");
+            } finally {
+              btn.disabled = false; btn.textContent = "🔄 Probe all routers";
+            }
+          });
+        }
 
         setHTML(root, "mk-devices-list", list.length ? list.map(r => {
           const online = r.status === "online";

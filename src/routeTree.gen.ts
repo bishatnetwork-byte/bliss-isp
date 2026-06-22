@@ -37,6 +37,7 @@ import { Route as ApiPublicWebhooksMpesaRouteImport } from './routes/api/public/
 import { Route as ApiPublicWebhooksMarzpayRouteImport } from './routes/api/public/webhooks/marzpay'
 import { Route as ApiPublicSessionsEventRouteImport } from './routes/api/public/sessions/event'
 import { Route as ApiPublicCronPurgeVouchersRouteImport } from './routes/api/public/cron/purge-vouchers'
+import { Route as ApiPublicCronProbeRoutersRouteImport } from './routes/api/public/cron/probe-routers'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -180,6 +181,12 @@ const ApiPublicCronPurgeVouchersRoute =
     path: '/api/public/cron/purge-vouchers',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronProbeRoutersRoute =
+  ApiPublicCronProbeRoutersRouteImport.update({
+    id: '/api/public/cron/probe-routers',
+    path: '/api/public/cron/probe-routers',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
@@ -234,6 +242,7 @@ export interface FileRoutesByTo {
   '/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
@@ -265,6 +274,7 @@ export interface FileRoutesById {
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
   '/p/$tenant': typeof PTenantRoute
   '/api/public/connect': typeof ApiPublicConnectRoute
+  '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
   '/api/public/webhooks/marzpay': typeof ApiPublicWebhooksMarzpayRoute
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/probe-routers'
     | '/api/public/cron/purge-vouchers'
     | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/probe-routers'
     | '/api/public/cron/purge-vouchers'
     | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
@@ -355,6 +367,7 @@ export interface FileRouteTypes {
     | '/_authenticated/withdraw'
     | '/p/$tenant'
     | '/api/public/connect'
+    | '/api/public/cron/probe-routers'
     | '/api/public/cron/purge-vouchers'
     | '/api/public/sessions/event'
     | '/api/public/webhooks/marzpay'
@@ -368,6 +381,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PTenantRoute: typeof PTenantRoute
   ApiPublicConnectRoute: typeof ApiPublicConnectRoute
+  ApiPublicCronProbeRoutersRoute: typeof ApiPublicCronProbeRoutersRoute
   ApiPublicCronPurgeVouchersRoute: typeof ApiPublicCronPurgeVouchersRoute
   ApiPublicSessionsEventRoute: typeof ApiPublicSessionsEventRoute
   ApiPublicWebhooksMarzpayRoute: typeof ApiPublicWebhooksMarzpayRoute
@@ -572,6 +586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronPurgeVouchersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/probe-routers': {
+      id: '/api/public/cron/probe-routers'
+      path: '/api/public/cron/probe-routers'
+      fullPath: '/api/public/cron/probe-routers'
+      preLoaderRoute: typeof ApiPublicCronProbeRoutersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -627,6 +648,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   PTenantRoute: PTenantRoute,
   ApiPublicConnectRoute: ApiPublicConnectRoute,
+  ApiPublicCronProbeRoutersRoute: ApiPublicCronProbeRoutersRoute,
   ApiPublicCronPurgeVouchersRoute: ApiPublicCronPurgeVouchersRoute,
   ApiPublicSessionsEventRoute: ApiPublicSessionsEventRoute,
   ApiPublicWebhooksMarzpayRoute: ApiPublicWebhooksMarzpayRoute,
