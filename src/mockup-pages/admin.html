@@ -122,10 +122,10 @@
   <div class="sep"></div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
     <span style="font-size:14px;font-weight:800;color:var(--t1)">🔌 Platform Integrations</span>
-    <span class="fhint" style="margin:0">Each business connects its own accounts — manage MarzPay and SMS under Settings</span>
+    <span class="fhint" style="margin:0">Admin-only — MarzPay and SMS are configured here once for the whole platform</span>
   </div>
 
-  <div class="alert ai"><span class="al-ico">ℹ️</span>MarzPay (payments) and SMS gateway are configured per-business under <b>Settings → Payments</b> and <b>Settings → SMS</b>. The integrations below (Domain, Email, CHR) are also per-business and live here in Admin since they're less frequently touched.</div>
+  <div class="alert ai"><span class="al-ico">ℹ️</span>MarzPay (payments) and the SMS gateway are <b>platform-wide</b> and managed only in this Admin Panel (see the <b>Platform Gateways</b> card above). Tenants no longer see Payments/SMS tabs in their Settings — all customer payments flow through the single MarzPay account and all SMS through the single WizaSMS account. Domain, Email, and CHR below are also platform-level integrations.</div>
 
   <div class="card">
     <div class="card-hd"><span class="card-title">📧 Email Gateway</span><span class="badge" id="eg-status-badge">Not Connected</span></div>
