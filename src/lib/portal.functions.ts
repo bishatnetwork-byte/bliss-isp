@@ -13,16 +13,18 @@ function publicClient() {
   );
 }
 
+type Json = string | number | boolean | null | { [k: string]: Json } | Json[];
+
 export type PortalPayload = {
   settings: {
     owner_id: string;
-    template: "classic" | "modern" | "bishat" | string;
+    template: string;
     business_name: string | null;
     logo_url: string | null;
     primary_color: string;
     welcome_text: string | null;
     video_url: string | null;
-    config: Record<string, unknown>;
+    config: Json;
   } | null;
   plans: Array<{
     id: string; name: string; price: number; currency: string;
