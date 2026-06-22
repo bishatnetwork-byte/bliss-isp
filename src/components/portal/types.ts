@@ -12,6 +12,9 @@ export type PortalDesignProps = {
   onConnect: () => void;
   onReset: () => void;
   currency: string;
+  onBuy?: (planId: string) => void;
+  buying?: boolean;
+  buyStatus?: { state: "idle" | "pending" | "paid" | "failed"; message?: string; code?: string | null };
 };
 
 export function fmtDuration(mins: number) {

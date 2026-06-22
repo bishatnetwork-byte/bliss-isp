@@ -4,15 +4,35 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 type PeriodKey = "today" | "yesterday" | "thisWeek" | "lastWeek" | "thisMonth" | "lastMonth";
 type PeriodAgg = { cash: number; mobileMoney: number; total: number; count: number };
 
-function startOfDay(d: Date) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
-function startOfWeek(d: Date) {
-  // Monday-based week
-  const x = startOfDay(d);
-  const day = (x.getDay() + 6) % 7;
-  x.setDate(x.getDate() - day);
-  return x;
+function tzOffsetMinutes(tz: string, at: Date): number {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hour12: false,
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    }).formatToParts(at).reduce<Record<string, string>>((a, p) => { if (p.type !== "literal") a[p.type] = p.value; return a; }, {});
+    const asUTC = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour % 24, +parts.minute, +parts.second);
+    return Math.round((asUTC - at.getTime()) / 60000);
+  } catch { return 0; }
 }
-function startOfMonth(d: Date) { const x = startOfDay(d); x.setDate(1); return x; }
+function startOfDayTz(d: Date, tz: string): Date {
+  const off = tzOffsetMinutes(tz, d);
+  const local = new Date(d.getTime() + off * 60000);
+  local.setUTCHours(0, 0, 0, 0);
+  return new Date(local.getTime() - off * 60000);
+}
+function startOfWeekTz(d: Date, tz: string): Date {
+  const sd = startOfDayTz(d, tz);
+  const localDow = new Date(sd.getTime() + tzOffsetMinutes(tz, sd) * 60000).getUTCDay();
+  const back = (localDow + 6) % 7;
+  return new Date(sd.getTime() - back * 86400000);
+}
+function startOfMonthTz(d: Date, tz: string): Date {
+  const off = tzOffsetMinutes(tz, d);
+  const local = new Date(d.getTime() + off * 60000);
+  local.setUTCDate(1); local.setUTCHours(0, 0, 0, 0);
+  return new Date(local.getTime() - off * 60000);
+}
 
 function isCash(method: string | null) {
   const m = (method || "").toLowerCase();
@@ -23,13 +43,16 @@ export const getDashboardStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase } = context;
+    const { data: biz } = await supabase
+      .from("business_settings").select("timezone").eq("owner_id", context.userId).maybeSingle();
+    const tz = (biz?.timezone as string) || "Africa/Nairobi";
     const now = new Date();
-    const todayStart = startOfDay(now);
-    const yesterdayStart = new Date(todayStart); yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-    const thisWeekStart = startOfWeek(now);
-    const lastWeekStart = new Date(thisWeekStart); lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    const thisMonthStart = startOfMonth(now);
-    const lastMonthStart = new Date(thisMonthStart); lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+    const todayStart = startOfDayTz(now, tz);
+    const yesterdayStart = new Date(todayStart.getTime() - 86400000);
+    const thisWeekStart = startOfWeekTz(now, tz);
+    const lastWeekStart = new Date(thisWeekStart.getTime() - 7 * 86400000);
+    const thisMonthStart = startOfMonthTz(now, tz);
+    const lastMonthStart = startOfMonthTz(new Date(thisMonthStart.getTime() - 86400000), tz);
 
     const fromIso = lastMonthStart.toISOString();
     const trendFromIso = new Date(Date.now() - 90 * 86400_000).toISOString();

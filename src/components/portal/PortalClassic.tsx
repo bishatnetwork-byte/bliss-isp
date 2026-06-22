@@ -6,7 +6,7 @@ import { fmtDuration, fmtData, fmtSpeed } from "./types";
 
 export function PortalClassic(p: PortalDesignProps) {
   const { settings, plans, voucherCode, setVoucherCode, voucherPhone, setVoucherPhone,
-    connecting, result, onConnect, onReset, currency } = p;
+    connecting, result, onConnect, onReset, currency, onBuy, buying, buyStatus } = p;
   const primary = settings.primary_color || "#2563eb";
 
   return (
@@ -111,19 +111,35 @@ export function PortalClassic(p: PortalDesignProps) {
               )}
               {plans.map((pl) => (
                 <div key={pl.id} className="p-3 rounded-lg border-2 border-transparent hover:shadow-md transition-all">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold">{pl.name}</p>
+                  <div className="flex justify-between items-center gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold truncate">{pl.name}</p>
                       <p className="text-xs text-muted-foreground flex items-center gap-2">
                         <Clock className="h-3 w-3" />{fmtDuration(pl.duration_minutes)} · {fmtSpeed(pl.rate_limit_down_kbps)} · {fmtData(pl.data_limit_mb)}
                       </p>
                     </div>
-                    <p className="font-bold text-lg" style={{ color: primary }}>
-                      {pl.price.toLocaleString()} <span className="text-xs">{pl.currency || currency}</span>
-                    </p>
+                    <div className="text-right shrink-0">
+                      <p className="font-bold text-lg" style={{ color: primary }}>
+                        {pl.price.toLocaleString()} <span className="text-xs">{pl.currency || currency}</span>
+                      </p>
+                      {onBuy && (
+                        <button
+                          onClick={() => onBuy(pl.id)} disabled={buying}
+                          className="mt-1 text-xs px-2 py-1 rounded font-semibold text-white disabled:opacity-60"
+                          style={{ backgroundColor: primary }}
+                        >Buy</button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
+              {buyStatus && buyStatus.state !== "idle" && (
+                <div className="mt-3 p-3 rounded-lg text-sm" style={{ backgroundColor: `${primary}10` }}>
+                  {buyStatus.state === "pending" && <><Loader2 className="inline h-4 w-4 mr-2 animate-spin" />{buyStatus.message}</>}
+                  {buyStatus.state === "paid" && <>✅ {buyStatus.message}{buyStatus.code ? ` — code ${buyStatus.code}` : ""}</>}
+                  {buyStatus.state === "failed" && <span className="text-destructive">⚠️ {buyStatus.message}</span>}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

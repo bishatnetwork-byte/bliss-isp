@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
 import { getPortalPayload, redeemVoucherPublic, type RedeemResult } from "@/lib/portal.functions";
+import { initiateVoucherStk, checkVoucherPaymentStatus } from "@/lib/payments.functions";
 import { PortalClassic } from "@/components/portal/PortalClassic";
 import { PortalModern } from "@/components/portal/PortalModern";
 import { PortalBishat } from "@/components/portal/PortalBishat";
@@ -45,6 +46,11 @@ function CaptivePortalPage() {
   const [voucherPhone, setVoucherPhone] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [result, setResult] = useState<RedeemResult | null>(null);
+  const [buying, setBuying] = useState(false);
+  const [buyStatus, setBuyStatus] = useState<{ state: "idle" | "pending" | "paid" | "failed"; message?: string; code?: string | null }>({ state: "idle" });
+
+  const initStk = useServerFn(initiateVoucherStk);
+  const checkStatus = useServerFn(checkVoucherPaymentStatus);
 
   if (!data) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
@@ -72,8 +78,6 @@ function CaptivePortalPage() {
       } });
       setResult(r);
       if (r.ok) {
-        // Notify the captive portal (RouterOS sends login via the hotspot login form);
-        // we POST to /api/public/connect to push the user into the router.
         fetch(`/api/public/connect`, {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -86,13 +90,51 @@ function CaptivePortalPage() {
       setConnecting(false);
     }
   };
-  const onReset = () => { setResult(null); setVoucherCode(""); };
+
+  const onBuy = async (planId: string) => {
+    if (!voucherPhone || voucherPhone.length < 7) {
+      setBuyStatus({ state: "failed", message: "Enter your mobile money phone first" });
+      return;
+    }
+    setBuying(true);
+    setBuyStatus({ state: "pending", message: "Sending payment prompt to your phone…" });
+    try {
+      const r = await initStk({ data: {
+        owner: tenant, plan_id: planId, phone: voucherPhone,
+        origin: typeof window !== "undefined" ? window.location.origin : undefined,
+      } });
+      if (!r.ok) { setBuyStatus({ state: "failed", message: r.error }); setBuying(false); return; }
+      const paymentId = r.payment_id;
+      // poll up to 120s
+      const started = Date.now();
+      const poll = async () => {
+        try {
+          const s = await checkStatus({ data: { payment_id: paymentId } });
+          if (s.status === "completed") {
+            setBuyStatus({ state: "paid", message: "Payment received", code: s.code ?? null });
+            if (s.code) setVoucherCode(s.code);
+            setBuying(false); return;
+          }
+          if (s.status === "failed") { setBuyStatus({ state: "failed", message: "Payment failed" }); setBuying(false); return; }
+        } catch { /* ignore transient */ }
+        if (Date.now() - started > 120_000) { setBuyStatus({ state: "failed", message: "Timed out waiting for payment" }); setBuying(false); return; }
+        setTimeout(poll, 3000);
+      };
+      setTimeout(poll, 3000);
+    } catch (e) {
+      setBuyStatus({ state: "failed", message: (e as Error).message });
+      setBuying(false);
+    }
+  };
+
+  const onReset = () => { setResult(null); setVoucherCode(""); setBuyStatus({ state: "idle" }); };
 
   const props = {
     settings, plans: data.plans,
     voucherCode, setVoucherCode, voucherPhone, setVoucherPhone,
     connecting, result, onConnect, onReset,
     currency: data.plans[0]?.currency || "UGX",
+    onBuy, buying, buyStatus,
   };
 
   if (template === "modern") return <PortalModern {...props} />;
