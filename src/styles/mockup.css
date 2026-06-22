@@ -318,15 +318,28 @@ textarea.fc{resize:vertical;min-height:72px}
 .empty{text-align:center;padding:40px 20px;color:var(--t4)}
 .empty-ico{font-size:38px;margin-bottom:8px;opacity:.4;display:block}
 .sep{height:1px;background:var(--border);margin:16px 0}
-/* ── Responsive: laptop is the default layout above. Tablet and phone tiers below. ── */
+/* ── Responsive: laptop default above. Tablet / phone tiers below. ── */
+@media(max-width:1180px){
+  .g2{grid-template-columns:1fr}
+  .fg.c3{grid-template-columns:1fr 1fr}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .template-selector{grid-template-columns:repeat(3,1fr)}
+  /* inline style="display:grid;grid-template-columns:1fr 1fr" rows on cards */
+  [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+}
 @media(max-width:1024px){
   .menu-btn{display:flex}
   #sidebar{transform:translateX(-100%)}
   #sidebar.open{transform:translateX(0)}
   #main{margin-left:0}
-  .g2{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:1fr 1fr}
-  .template-selector{grid-template-columns:repeat(3,1fr)}
+  .fg.c2{grid-template-columns:1fr}
+  .router-status-metrics{grid-template-columns:1fr}
+  .plan-grid{grid-template-columns:repeat(2,1fr)}
+  .cp-plans{grid-template-columns:1fr}
+  .tab-bar{overflow-x:auto;width:100%;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  .tab-bar .tab{flex-shrink:0;white-space:nowrap}
+  table{font-size:12px}
+  .card-hd{flex-wrap:wrap;gap:8px}
 }
 @media(max-width:640px){
   #topbar{padding:0 12px}
@@ -335,14 +348,20 @@ textarea.fc{resize:vertical;min-height:72px}
   .stat{padding:12px}
   .stat-val{font-size:18px}
   .fg.c2,.fg.c3{grid-template-columns:1fr}
-  .plan-grid{grid-template-columns:1fr 1fr}
+  .plan-grid{grid-template-columns:1fr}
   .template-selector{grid-template-columns:1fr 1fr}
+  .perm-grid{grid-template-columns:1fr}
   .card-body{padding:12px!important}
-  .tab-bar{overflow-x:auto;width:100%;flex-wrap:nowrap}
-  .tab-bar .tab{flex-shrink:0}
   .btn-row{flex-direction:column}
   .btn-row .btn{width:100%}
   .page-title{font-size:13px}
   .tb-btn span,.tb-btn{font-size:11px;padding:6px 9px}
   .avatar{width:28px;height:28px;font-size:11px}
+  /* keep horizontal scroll on data tables instead of clipping */
+  .tbl-wrap,[class*="overflow-y-auto"]{overflow-x:auto}
+  table{min-width:520px}
+  /* credit method picker stacks */
+  .credit-method{grid-template-columns:1fr!important}
+}
+
 }
