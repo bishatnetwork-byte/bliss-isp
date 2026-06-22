@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAccess, canSeeRoute } from "@/hooks/useAccess";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -63,6 +64,7 @@ function AdminShell() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [email, setEmail] = useState("");
+  const { data: access } = useAccess();
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -96,24 +98,28 @@ function AdminShell() {
           </div>
         </div>
         <nav>
-          {NAV.map((group) => (
-            <div key={group.section}>
-              <div className="nav-section">{group.section}</div>
-              {group.items.map((item) => {
-                const active = pathname === item.to;
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className={`nav-item${active ? " active" : ""}`}
-                  >
-                    <span className="nav-icon">{item.icon}</span>
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
+          {NAV.map((group) => {
+            const visible = group.items.filter((it) => canSeeRoute(access, it.to));
+            if (visible.length === 0) return null;
+            return (
+              <div key={group.section}>
+                <div className="nav-section">{group.section}</div>
+                {visible.map((item) => {
+                  const active = pathname === item.to;
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`nav-item${active ? " active" : ""}`}
+                    >
+                      <span className="nav-icon">{item.icon}</span>
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          })}
         </nav>
         <div className="sidebar-bottom">
           <div className="mk-status">
