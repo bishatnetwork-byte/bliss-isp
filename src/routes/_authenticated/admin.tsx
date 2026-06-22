@@ -150,6 +150,59 @@ function AdminPage() {
     };
   }, [members.data, members.isLoading, members.isError, members.error, canManage, remove, update]);
 
+  // Hydrate platform fee/wallet cards + fee log
+  useEffect(() => {
+    const o = overview.data;
+    if (!o) return;
+    const cur = (n: number) => `UGX ${Math.round(n).toLocaleString()}`;
+    setText("ad-platform-bal", cur(o.platformFees.total));
+    setText("ad-platform-sub", `Online ${cur(o.platformFees.online)} • Offline ${cur(o.platformFees.offline)} • SMS ${cur(o.platformFees.sms)} • Withdraw ${cur(o.platformFees.withdrawals)}`);
+    setText("ad-fee-avail", cur(o.platformFees.available));
+    setText("ad-main-wallet", cur(o.wallet.balance));
+    setText("ad-sms-wallet", `${o.wallet.smsCredits.toLocaleString()} credits`);
+    setText("ad-total-wd", cur(o.wallet.totalWithdrawn));
+    setText("ad-net-rev", cur(o.wallet.netRevenue));
+
+    const stats = document.getElementById("ad-fee-stats");
+    if (stats) {
+      const cards = [
+        { lbl: "Online Fees", val: o.platformFees.online, color: "var(--blue)" },
+        { lbl: "Offline Fees", val: o.platformFees.offline, color: "var(--green)" },
+        { lbl: "SMS Fees", val: o.platformFees.sms, color: "var(--purple)" },
+        { lbl: "Paid Out", val: o.platformFees.paidOut, color: "var(--orange)" },
+      ];
+      stats.innerHTML = cards.map(c => `<div class="card" style="margin-bottom:0">
+        <div class="card-body" style="padding:14px">
+          <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:700">${c.lbl}</div>
+          <div style="font-size:22px;font-weight:800;color:${c.color};margin-top:4px">${cur(c.val)}</div>
+        </div></div>`).join("");
+    }
+
+    const log = document.getElementById("ad-fee-log");
+    if (log) {
+      log.innerHTML = o.feeLog.length ? o.feeLog.slice(0, 100).map(r => `<tr>
+        <td><span class="badge ${r.source === "Online" ? "bg-blue" : "bg-green"}">${r.source}</span></td>
+        <td>${escapeHtml(r.transaction)}</td>
+        <td>${cur(r.gross)}</td>
+        <td>${r.rate.toFixed(1)}%</td>
+        <td><b>${cur(r.fee)}</b></td>
+      </tr>`).join("") : '<tr><td colspan="5" style="text-align:center;padding:14px;color:var(--t3)">No fee activity yet</td></tr>';
+    }
+
+    const fwd = document.getElementById("fwd-tbody");
+    if (fwd) {
+      fwd.innerHTML = o.feeWithdrawals.length ? o.feeWithdrawals.map(w => `<tr>
+        <td class="mono" style="font-size:11px">${w.id.slice(0, 8)}</td>
+        <td><b>${cur(Number(w.amount))}</b></td>
+        <td>${escapeHtml(w.method)}</td>
+        <td>${escapeHtml(w.destination)}</td>
+        <td><span class="badge ${w.status === "completed" ? "bg-green" : w.status === "failed" ? "bg-red" : "bg-blue"}">${w.status}</span></td>
+        <td style="font-size:11px;color:var(--t3)">${new Date(w.created_at).toLocaleString()}</td>
+      </tr>`).join("") : '<tr><td colspan="6" style="text-align:center;padding:14px;color:var(--t3)">No platform-fee withdrawals yet</td></tr>';
+    }
+  }, [overview.data]);
+
+
   return (
     <>
       <MockupPage title="Admin Panel" html={html} />
