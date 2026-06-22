@@ -5,9 +5,11 @@
 // Run: node scripts/vps-node-adapter.mjs   (PORT defaults to 3001)
 
 import { createServer } from "node:http";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, extname } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ENTRY = resolve(__dirname, "..", "dist", "server", "server.js");
@@ -21,6 +23,26 @@ if (typeof handler?.fetch !== "function") {
 
 const PORT = Number(process.env.PORT) || 3001;
 const HOST = process.env.HOST || "127.0.0.1";
+const STATIC_ROOTS = [
+  resolve(__dirname, "..", "dist", "client"),
+  resolve(__dirname, "..", "dist", "public"),
+  resolve(__dirname, "..", ".output", "public"),
+  resolve(__dirname, "..", "public"),
+];
+const CONTENT_TYPES = {
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+};
 
 function toWebRequest(req) {
   const proto = req.headers["x-forwarded-proto"] || "http";
@@ -39,6 +61,30 @@ function toWebRequest(req) {
   return new Request(url, init);
 }
 
+async function tryServeStatic(req, res) {
+  if (req.method !== "GET" && req.method !== "HEAD") return false;
+  const pathname = decodeURIComponent(new URL(req.url, `http://${req.headers.host || "localhost"}`).pathname);
+  const relativePath = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
+  for (const root of STATIC_ROOTS) {
+    const filePath = resolve(root, relativePath);
+    if (!filePath.startsWith(root)) continue;
+    try {
+      const fileStat = await stat(filePath);
+      if (!fileStat.isFile()) continue;
+      res.statusCode = 200;
+      res.setHeader("Content-Type", CONTENT_TYPES[extname(filePath)] || "application/octet-stream");
+      if (pathname.startsWith("/assets/")) res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      else res.setHeader("Cache-Control", "public, max-age=300");
+      if (req.method === "HEAD") return res.end(), true;
+      createReadStream(filePath).pipe(res);
+      return true;
+    } catch {
+      // Try the next static root, then fall back to SSR.
+    }
+  }
+  return false;
+}
+
 async function sendWebResponse(res, webRes) {
   res.statusCode = webRes.status;
   webRes.headers.forEach((value, key) => res.setHeader(key, value));
@@ -51,6 +97,7 @@ const env = { ...process.env };
 
 const server = createServer(async (req, res) => {
   try {
+    if (await tryServeStatic(req, res)) return;
     const webReq = toWebRequest(req);
     const webRes = await handler.fetch(webReq, env, {
       waitUntil: () => {},
