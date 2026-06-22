@@ -10,7 +10,13 @@ import {
   updateTenantMember,
   removeTenantMember,
 } from "@/lib/memberships.functions";
+import { getPlatformOverview, listAuditLogs } from "@/lib/platform.functions";
 import { useAccess } from "@/hooks/useAccess";
+
+const setText = (id: string, v: string | number) => {
+  const el = document.getElementById(id);
+  if (el) el.textContent = String(v);
+};
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
@@ -43,11 +49,23 @@ function AdminPage() {
   const inviteFn = useServerFn(inviteTenantMember);
   const updateFn = useServerFn(updateTenantMember);
   const removeFn = useServerFn(removeTenantMember);
+  const overviewFn = useServerFn(getPlatformOverview);
+  const auditFn = useServerFn(listAuditLogs);
 
   const members = useQuery({
     queryKey: ["tenant-members"],
     queryFn: () => listFn(),
     staleTime: 30_000,
+  });
+  const overview = useQuery({
+    queryKey: ["platform-overview"],
+    queryFn: () => overviewFn(),
+    refetchInterval: 30_000,
+  });
+  const audit = useQuery({
+    queryKey: ["audit-logs"],
+    queryFn: () => auditFn({ data: { limit: 100 } }),
+    refetchInterval: 30_000,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["tenant-members"] });
@@ -137,6 +155,59 @@ function AdminPage() {
     };
   }, [members.data, members.isLoading, members.isError, members.error, canManage, remove, update]);
 
+  // Hydrate platform fee/wallet cards + fee log
+  useEffect(() => {
+    const o = overview.data;
+    if (!o) return;
+    const cur = (n: number) => `UGX ${Math.round(n).toLocaleString()}`;
+    setText("ad-platform-bal", cur(o.platformFees.total));
+    setText("ad-platform-sub", `Online ${cur(o.platformFees.online)} • Offline ${cur(o.platformFees.offline)} • SMS ${cur(o.platformFees.sms)} • Withdraw ${cur(o.platformFees.withdrawals)}`);
+    setText("ad-fee-avail", cur(o.platformFees.available));
+    setText("ad-main-wallet", cur(o.wallet.balance));
+    setText("ad-sms-wallet", `${o.wallet.smsCredits.toLocaleString()} credits`);
+    setText("ad-total-wd", cur(o.wallet.totalWithdrawn));
+    setText("ad-net-rev", cur(o.wallet.netRevenue));
+
+    const stats = document.getElementById("ad-fee-stats");
+    if (stats) {
+      const cards = [
+        { lbl: "Online Fees", val: o.platformFees.online, color: "var(--blue)" },
+        { lbl: "Offline Fees", val: o.platformFees.offline, color: "var(--green)" },
+        { lbl: "SMS Fees", val: o.platformFees.sms, color: "var(--purple)" },
+        { lbl: "Paid Out", val: o.platformFees.paidOut, color: "var(--orange)" },
+      ];
+      stats.innerHTML = cards.map(c => `<div class="card" style="margin-bottom:0">
+        <div class="card-body" style="padding:14px">
+          <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:700">${c.lbl}</div>
+          <div style="font-size:22px;font-weight:800;color:${c.color};margin-top:4px">${cur(c.val)}</div>
+        </div></div>`).join("");
+    }
+
+    const log = document.getElementById("ad-fee-log");
+    if (log) {
+      log.innerHTML = o.feeLog.length ? o.feeLog.slice(0, 100).map(r => `<tr>
+        <td><span class="badge ${r.source === "Online" ? "bg-blue" : "bg-green"}">${r.source}</span></td>
+        <td>${escapeHtml(r.transaction)}</td>
+        <td>${cur(r.gross)}</td>
+        <td>${r.rate.toFixed(1)}%</td>
+        <td><b>${cur(r.fee)}</b></td>
+      </tr>`).join("") : '<tr><td colspan="5" style="text-align:center;padding:14px;color:var(--t3)">No fee activity yet</td></tr>';
+    }
+
+    const fwd = document.getElementById("fwd-tbody");
+    if (fwd) {
+      fwd.innerHTML = o.feeWithdrawals.length ? o.feeWithdrawals.map(w => `<tr>
+        <td class="mono" style="font-size:11px">${w.id.slice(0, 8)}</td>
+        <td><b>${cur(Number(w.amount))}</b></td>
+        <td>${escapeHtml(w.method)}</td>
+        <td>${escapeHtml(w.destination)}</td>
+        <td><span class="badge ${w.status === "completed" ? "bg-green" : w.status === "failed" ? "bg-red" : "bg-blue"}">${w.status}</span></td>
+        <td style="font-size:11px;color:var(--t3)">${new Date(w.created_at).toLocaleString()}</td>
+      </tr>`).join("") : '<tr><td colspan="6" style="text-align:center;padding:14px;color:var(--t3)">No platform-fee withdrawals yet</td></tr>';
+    }
+  }, [overview.data]);
+
+
   return (
     <>
       <MockupPage title="Admin Panel" html={html} />
@@ -202,6 +273,38 @@ function AdminPage() {
           saving={update.isPending}
         />
       ) : null}
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="card-hd">
+          <span className="card-title">📜 Activity Log</span>
+          <span className="badge bg-blue">{audit.data?.length ?? 0} events</span>
+        </div>
+        <div className="tbl-wrap" style={{ maxHeight: 360, overflowY: "auto" }}>
+          <table>
+            <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
+            <tbody>
+              {audit.isLoading ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 18, color: "var(--t3)" }}>Loading…</td></tr>
+              ) : (audit.data?.length ?? 0) === 0 ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 18, color: "var(--t3)" }}>No events yet</td></tr>
+              ) : (
+                audit.data!.map((r) => (
+                  <tr key={r.id}>
+                    <td style={{ fontSize: 11, color: "var(--t3)", whiteSpace: "nowrap" }}>
+                      {new Date(r.created_at).toLocaleString()}
+                    </td>
+                    <td>{r.actor?.display_name ?? r.actor_id?.slice(0, 8) ?? "system"}</td>
+                    <td><span className="badge bg-purple">{r.action}</span></td>
+                    <td style={{ fontSize: 12 }}>{r.entity ?? "—"}</td>
+                    <td className="mono" style={{ fontSize: 11, color: "var(--t3)", maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {r.metadata ? JSON.stringify(r.metadata) : "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </>
   );
 }

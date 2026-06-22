@@ -50,6 +50,7 @@ export type Database = {
           entity_id: string | null
           id: string
           metadata: Json | null
+          owner_id: string | null
         }
         Insert: {
           action: string
@@ -59,6 +60,7 @@ export type Database = {
           entity_id?: string | null
           id?: string
           metadata?: Json | null
+          owner_id?: string | null
         }
         Update: {
           action?: string
@@ -68,6 +70,7 @@ export type Database = {
           entity_id?: string | null
           id?: string
           metadata?: Json | null
+          owner_id?: string | null
         }
         Relationships: []
       }
