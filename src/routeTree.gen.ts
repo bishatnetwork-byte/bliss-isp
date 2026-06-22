@@ -39,6 +39,7 @@ import { Route as ApiPublicWebhooksMarzpayRouteImport } from './routes/api/publi
 import { Route as ApiPublicSessionsEventRouteImport } from './routes/api/public/sessions/event'
 import { Route as ApiPublicCronVoucherExpiryRemindersRouteImport } from './routes/api/public/cron/voucher-expiry-reminders'
 import { Route as ApiPublicCronPurgeVouchersRouteImport } from './routes/api/public/cron/purge-vouchers'
+import { Route as ApiPublicCronProcessRenewalsRouteImport } from './routes/api/public/cron/process-renewals'
 import { Route as ApiPublicCronProbeRoutersRouteImport } from './routes/api/public/cron/probe-routers'
 import { Route as ApiPublicCronDispatchCampaignsRouteImport } from './routes/api/public/cron/dispatch-campaigns'
 
@@ -195,6 +196,12 @@ const ApiPublicCronPurgeVouchersRoute =
     path: '/api/public/cron/purge-vouchers',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronProcessRenewalsRoute =
+  ApiPublicCronProcessRenewalsRouteImport.update({
+    id: '/api/public/cron/process-renewals',
+    path: '/api/public/cron/process-renewals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronProbeRoutersRoute =
   ApiPublicCronProbeRoutersRouteImport.update({
     id: '/api/public/cron/probe-routers',
@@ -235,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
   '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
+  '/api/public/cron/process-renewals': typeof ApiPublicCronProcessRenewalsRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/cron/voucher-expiry-reminders': typeof ApiPublicCronVoucherExpiryRemindersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
@@ -268,6 +276,7 @@ export interface FileRoutesByTo {
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
   '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
+  '/api/public/cron/process-renewals': typeof ApiPublicCronProcessRenewalsRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/cron/voucher-expiry-reminders': typeof ApiPublicCronVoucherExpiryRemindersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
@@ -303,6 +312,7 @@ export interface FileRoutesById {
   '/api/public/connect': typeof ApiPublicConnectRoute
   '/api/public/cron/dispatch-campaigns': typeof ApiPublicCronDispatchCampaignsRoute
   '/api/public/cron/probe-routers': typeof ApiPublicCronProbeRoutersRoute
+  '/api/public/cron/process-renewals': typeof ApiPublicCronProcessRenewalsRoute
   '/api/public/cron/purge-vouchers': typeof ApiPublicCronPurgeVouchersRoute
   '/api/public/cron/voucher-expiry-reminders': typeof ApiPublicCronVoucherExpiryRemindersRoute
   '/api/public/sessions/event': typeof ApiPublicSessionsEventRoute
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/api/public/connect'
     | '/api/public/cron/dispatch-campaigns'
     | '/api/public/cron/probe-routers'
+    | '/api/public/cron/process-renewals'
     | '/api/public/cron/purge-vouchers'
     | '/api/public/cron/voucher-expiry-reminders'
     | '/api/public/sessions/event'
@@ -371,6 +382,7 @@ export interface FileRouteTypes {
     | '/api/public/connect'
     | '/api/public/cron/dispatch-campaigns'
     | '/api/public/cron/probe-routers'
+    | '/api/public/cron/process-renewals'
     | '/api/public/cron/purge-vouchers'
     | '/api/public/cron/voucher-expiry-reminders'
     | '/api/public/sessions/event'
@@ -405,6 +417,7 @@ export interface FileRouteTypes {
     | '/api/public/connect'
     | '/api/public/cron/dispatch-campaigns'
     | '/api/public/cron/probe-routers'
+    | '/api/public/cron/process-renewals'
     | '/api/public/cron/purge-vouchers'
     | '/api/public/cron/voucher-expiry-reminders'
     | '/api/public/sessions/event'
@@ -422,6 +435,7 @@ export interface RootRouteChildren {
   ApiPublicConnectRoute: typeof ApiPublicConnectRoute
   ApiPublicCronDispatchCampaignsRoute: typeof ApiPublicCronDispatchCampaignsRoute
   ApiPublicCronProbeRoutersRoute: typeof ApiPublicCronProbeRoutersRoute
+  ApiPublicCronProcessRenewalsRoute: typeof ApiPublicCronProcessRenewalsRoute
   ApiPublicCronPurgeVouchersRoute: typeof ApiPublicCronPurgeVouchersRoute
   ApiPublicCronVoucherExpiryRemindersRoute: typeof ApiPublicCronVoucherExpiryRemindersRoute
   ApiPublicSessionsEventRoute: typeof ApiPublicSessionsEventRoute
@@ -641,6 +655,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronPurgeVouchersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/process-renewals': {
+      id: '/api/public/cron/process-renewals'
+      path: '/api/public/cron/process-renewals'
+      fullPath: '/api/public/cron/process-renewals'
+      preLoaderRoute: typeof ApiPublicCronProcessRenewalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/probe-routers': {
       id: '/api/public/cron/probe-routers'
       path: '/api/public/cron/probe-routers'
@@ -713,6 +734,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicConnectRoute: ApiPublicConnectRoute,
   ApiPublicCronDispatchCampaignsRoute: ApiPublicCronDispatchCampaignsRoute,
   ApiPublicCronProbeRoutersRoute: ApiPublicCronProbeRoutersRoute,
+  ApiPublicCronProcessRenewalsRoute: ApiPublicCronProcessRenewalsRoute,
   ApiPublicCronPurgeVouchersRoute: ApiPublicCronPurgeVouchersRoute,
   ApiPublicCronVoucherExpiryRemindersRoute:
     ApiPublicCronVoucherExpiryRemindersRoute,
