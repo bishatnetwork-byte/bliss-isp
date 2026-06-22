@@ -83,7 +83,7 @@ function AdminPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("staff");
   const [editing, setEditing] = useState<{ memberId: string; name: string; tabs: string[] } | null>(null);
-  const [section, setSection] = useState<"all" | "users" | "gateways" | "fees" | "mikrotik">("all");
+  const [section, setSection] = useState<"all" | "users" | "gateways" | "fees" | "mikrotik">("users");
 
   // Tag mockup cards into sections so the dropdown can filter them.
   useEffect(() => {
