@@ -160,8 +160,9 @@ function AdminPage() {
       const tag = el.getAttribute("data-admin-extra")!;
       el.style.display = section === "all" || tag === section ? "" : "none";
     });
-    // Hide mixed wrappers whose columns are all hidden.
-    document.querySelectorAll<HTMLElement>("[data-admin-mixed]").forEach((el) => {
+    // Hide mixed wrappers whose visible children are all hidden — bottom-up.
+    const mixed = Array.from(document.querySelectorAll<HTMLElement>("[data-admin-mixed]")).reverse();
+    mixed.forEach((el) => {
       const anyVisible = Array.from(el.children).some(
         (c) => (c as HTMLElement).style.display !== "none",
       );
